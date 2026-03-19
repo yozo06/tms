@@ -1,0 +1,51 @@
+# Tree Management System (TMS)
+
+A comprehensive, full-stack application built to track, manage, and maintain trees across various designated land zones. This system is designed for land owners, managers, and field workers to collaboratively monitor tree health, log activities, and track overall progress.
+
+![Dashboard Preview](./frontend/public/icons/icon-512.png) 
+
+## Features
+
+- **Dashboard Analytics**: Real-time summary counts, progress metrics, and urgent tree highlights (rendered dynamically backend-side).
+- **Interactive Map Picker**: Visually place trees on a designated canvas to automatically populate X/Y coordinates during addition.
+- **Tree Lifecycle Tracking**: Track trees from 'pending' addition, through active actions ('cut', 'trim', 'treat', 'monitor'), to 'completed'.
+- **Health & Activity Logs**: Comprehensive timestamped logs for observations, health scores, and manual interventions per tree.
+- **Employee & Role Management**: Secure role-based access control (`owner` vs `employee`). Owners can re-assign workloads and manage the team.
+- **Progressive Web App (PWA)**: Built with offline-first capabilities utilizing Workbox caching for seamless field use on mobile devices with spotty internet.
+- **Google Drive Integration**: Automated upload of tree photos and media to a secure, organized Google Drive structure.
+
+## Tech Stack
+
+- **Frontend**: React, Vite, Tailwind CSS, Zustand (state management), React Router.
+- **Backend**: Node.js, Express, TypeScript.
+- **Database & Auth**: Supabase (PostgreSQL + JWT Authentication).
+- **Hosting / Deployment**: Configured as a Unified App (the Node backend serves the static built React frontend for easy centralized deployment).
+
+## Local Development Initialization
+
+1. **Prerequisites**: Ensure you have Node.js (v18+) installed.
+2. **Install Dependencies**:
+   ```bash
+   npm install              # Installs backend dependencies
+   cd frontend && npm install # Installs frontend dependencies
+   cd ..
+   ```
+3. **Environment Setup**: 
+   Create a `.env` file in the root directory mirroring `.env.example`. You will need your Supabase API keys, DB URL, and Google Service Account credentials.
+4. **Run Application**:
+   ```bash
+   npm run dev
+   ```
+   *The backend runs securely on port `3000` and the frontend runs on port `5173`. The Vite proxy ensures seamless API communication.*
+
+## Deployment 
+
+This application is configured for unified deployment (e.g., Render.com, Railway, Heroku).
+
+1. Push this repository to GitHub.
+2. Connect your repository to your hosting provider as a standard **Node.js Web Service**.
+3. **Build Command**: `npm run build`
+4. **Start Command**: `npm start`
+5. Inject all necessary environment variables (from your `.env` file) into the hosting provider's dashboard.
+
+*The build command will automatically trigger a compilation of the React frontend into `frontend/dist` and transpile the Express backend into `dist`. The Express server will then statically serve your frontend application.*
