@@ -6,6 +6,7 @@ import { Plus, UserX, Edit2, Check, X, UserCheck } from 'lucide-react'
 export default function Employees() {
   const [users, setUsers] = useState<any[]>([])
   const [showForm, setShowForm] = useState(false)
+  const [showInactive, setShowInactive] = useState(false)
   const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editForm, setEditForm] = useState({ name: '', phone: '', role: '' })
@@ -56,6 +57,54 @@ export default function Employees() {
 
   const ROLE_COLORS: Record<string, string> = { owner: 'bg-forest-100 text-forest-700', employee: 'bg-blue-100 text-blue-700', volunteer: 'bg-purple-100 text-purple-700', viewer: 'bg-gray-100 text-gray-700' }
 
+  const activeUsers = users.filter(u => u.is_active)
+  const inactiveUsers = users.filter(u => !u.is_active)
+
+  const renderUserCard = (u: any) => (
+    <div key={u.id} className={`bg-white rounded-2xl p-4 shadow-sm ${!u.is_active ? 'opacity-60' : ''}`}>
+      {editingId === u.id ? (
+        <div className="space-y-2">
+          <input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" placeholder="Name" />
+          <input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))}
+            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" placeholder="Phone" />
+          <select value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))}
+            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
+            <option value="employee">Employee</option><option value="volunteer">Volunteer</option>
+          </select>
+          <div className="flex gap-2">
+            <button onClick={() => saveEdit(u.id)} className="flex-1 bg-forest-600 text-white text-sm font-medium py-2 rounded-xl flex items-center justify-center gap-1"><Check size={14} /> Save</button>
+            <button onClick={() => setEditingId(null)} className="w-10 border border-gray-200 rounded-xl text-gray-400 flex items-center justify-center"><X size={14} /></button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-forest-100 flex items-center justify-center text-forest-700 font-bold flex-shrink-0">{u.name[0]}</div>
+          <div className="flex-1">
+            <p className="font-medium text-gray-800">{u.name}</p>
+            <p className="text-xs text-gray-400">{u.email}</p>
+            {u.phone && <p className="text-xs text-gray-400">{u.phone}</p>}
+          </div>
+          <div className="flex flex-col items-end gap-1.5">
+            <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${ROLE_COLORS[u.role]}`}>{u.role}</span>
+            {!u.is_active && <span className="text-xs text-red-400">Inactive</span>}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            {u.role !== 'owner' && (
+              <button onClick={() => startEdit(u)} className="text-gray-300 hover:text-blue-400 transition-colors"><Edit2 size={15} /></button>
+            )}
+            {u.is_active && u.role !== 'owner' && (
+              <button onClick={() => deactivate(u.id, u.name)} className="text-gray-300 hover:text-red-400 transition-colors"><UserX size={15} /></button>
+            )}
+            {!u.is_active && (
+              <button onClick={() => reactivate(u.id, u.name)} className="text-gray-300 hover:text-green-500 transition-colors"><UserCheck size={15} /></button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
   return (
     <div className="px-4 pt-12 pb-8">
       <div className="flex items-center justify-between mb-6">
@@ -71,58 +120,36 @@ export default function Employees() {
           ))}
           <div><label className="text-xs text-gray-500">Role</label>
             <select value={form.role} onChange={set('role')} className="w-full mt-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
-              <option value="employee">Employee</option><option value="volunteer">Volunteer</option><option value="viewer">Viewer</option>
+              <option value="employee">Employee</option><option value="volunteer">Volunteer</option>
             </select>
           </div>
           <button onClick={submit} disabled={saving} className="w-full bg-forest-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60">{saving ? 'Adding…' : 'Add Member'}</button>
         </div>
       )}
+
       <div className="space-y-2">
-        {users.map(u => (
-          <div key={u.id} className={`bg-white rounded-2xl p-4 shadow-sm ${!u.is_active ? 'opacity-60' : ''}`}>
-            {editingId === u.id ? (
-              <div className="space-y-2">
-                <input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" placeholder="Name" />
-                <input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" placeholder="Phone" />
-                <select value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
-                  <option value="employee">Employee</option><option value="volunteer">Volunteer</option><option value="viewer">Viewer</option>
-                </select>
-                <div className="flex gap-2">
-                  <button onClick={() => saveEdit(u.id)} className="flex-1 bg-forest-600 text-white text-sm font-medium py-2 rounded-xl flex items-center justify-center gap-1"><Check size={14} /> Save</button>
-                  <button onClick={() => setEditingId(null)} className="w-10 border border-gray-200 rounded-xl text-gray-400 flex items-center justify-center"><X size={14} /></button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-forest-100 flex items-center justify-center text-forest-700 font-bold flex-shrink-0">{u.name[0]}</div>
-                <div className="flex-1">
-                  <p className="font-medium text-gray-800">{u.name}</p>
-                  <p className="text-xs text-gray-400">{u.email}</p>
-                  {u.phone && <p className="text-xs text-gray-400">{u.phone}</p>}
-                </div>
-                <div className="flex flex-col items-end gap-1.5">
-                  <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${ROLE_COLORS[u.role]}`}>{u.role}</span>
-                  {!u.is_active && <span className="text-xs text-red-400">Inactive</span>}
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  {u.role !== 'owner' && (
-                    <button onClick={() => startEdit(u)} className="text-gray-300 hover:text-blue-400 transition-colors"><Edit2 size={15} /></button>
-                  )}
-                  {u.is_active && u.role !== 'owner' && (
-                    <button onClick={() => deactivate(u.id, u.name)} className="text-gray-300 hover:text-red-400 transition-colors"><UserX size={15} /></button>
-                  )}
-                  {!u.is_active && (
-                    <button onClick={() => reactivate(u.id, u.name)} className="text-gray-300 hover:text-green-500 transition-colors"><UserCheck size={15} /></button>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
+        {activeUsers.length === 0 ? (
+          <p className="text-center text-gray-400 text-sm py-8">No active members.</p>
+        ) : (
+          activeUsers.map(renderUserCard)
+        )}
       </div>
+
+      {inactiveUsers.length > 0 && (
+        <div className="mt-8">
+          <button onClick={() => setShowInactive(s => !s)} className="flex items-center gap-3 text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors w-full pb-4">
+            <div className="flex-1 h-px bg-gray-200"></div>
+            <span>{showInactive ? 'Hide' : 'Show'} Inactive Members ({inactiveUsers.length})</span>
+            <div className="flex-1 h-px bg-gray-200"></div>
+          </button>
+
+          {showInactive && (
+            <div className="space-y-2">
+              {inactiveUsers.map(renderUserCard)}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
