@@ -80,16 +80,16 @@ export default function Employees() {
       ) : (
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-forest-100 flex items-center justify-center text-forest-700 font-bold flex-shrink-0">{u.name[0]}</div>
-          <div className="flex-1">
-            <p className="font-medium text-gray-800">{u.name}</p>
-            <p className="text-xs text-gray-400">{u.email}</p>
-            {u.phone && <p className="text-xs text-gray-400">{u.phone}</p>}
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-gray-800 truncate">{u.name}</p>
+            <p className="text-xs text-gray-400 truncate">{u.email}</p>
+            {u.phone && <p className="text-xs text-gray-400 truncate">{u.phone}</p>}
           </div>
-          <div className="flex flex-col items-end gap-1.5">
+          <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
             <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${ROLE_COLORS[u.role]}`}>{u.role}</span>
             {!u.is_active && <span className="text-xs text-red-400">Inactive</span>}
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 flex-shrink-0">
             {u.role !== 'owner' && (
               <button onClick={() => startEdit(u)} className="text-gray-300 hover:text-blue-400 transition-colors"><Edit2 size={15} /></button>
             )}
