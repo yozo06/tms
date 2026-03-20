@@ -8,12 +8,12 @@ import Spinner from '../components/Spinner'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Camera, ClipboardList, Activity, Edit2, CheckCircle2 } from 'lucide-react'
 
-const STATUSES = ['pending','in_progress','completed','on_hold']
+const STATUSES = ['pending', 'in_progress', 'completed', 'on_hold']
 
 export default function TreeDetail() {
   const { code } = useParams()
   const nav = useNavigate()
-  const { isOwner, user } = useAuthStore()
+  const { isOwner, isVolunteer, user } = useAuthStore()
   const [tree, setTree] = useState<any>(null)
   const [photos, setPhotos] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -30,8 +30,8 @@ export default function TreeDetail() {
     try {
       await updateTree(code!, { status: s, log_notes: statusNote })
       setTree((t: any) => ({ ...t, status: s }))
-      toast.success(`Status → ${s.replace('_',' ')}`)
-    } catch {}
+      toast.success(`Status → ${s.replace('_', ' ')}`)
+    } catch { }
   }
 
   const handlePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,7 +69,7 @@ export default function TreeDetail() {
           <ActionBadge action={tree.action} />
           <PriorityBadge p={tree.priority} />
           <StatusDot status={tree.status} />
-          <span className="text-xs text-forest-200 capitalize">{tree.status.replace('_',' ')}</span>
+          <span className="text-xs text-forest-200 capitalize">{tree.status.replace('_', ' ')}</span>
         </div>
       </div>
 
@@ -86,15 +86,15 @@ export default function TreeDetail() {
           </div>
         )}
 
-        {isMyTree && tree.status!=='completed' && (
+        {isMyTree && tree.status !== 'completed' && (
           <div className="bg-white rounded-2xl p-4 shadow-sm">
             <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Update Status</p>
             <div className="grid grid-cols-2 gap-2 mb-3">
-              {STATUSES.filter(s => s!==tree.status).map(s => (
+              {STATUSES.filter(s => s !== tree.status).map(s => (
                 <button key={s} onClick={() => changeStatus(s)}
-                  className={`py-2 px-3 rounded-xl text-sm font-medium border transition-colors capitalize ${s==='completed'?'bg-forest-600 text-white border-forest-600':'border-gray-200 text-gray-600'}`}>
-                  {s==='completed' && <CheckCircle2 size={14} className="inline mr-1" />}
-                  {s.replace('_',' ')}
+                  className={`py-2 px-3 rounded-xl text-sm font-medium border transition-colors capitalize ${s === 'completed' ? 'bg-forest-600 text-white border-forest-600' : 'border-gray-200 text-gray-600'}`}>
+                  {s === 'completed' && <CheckCircle2 size={14} className="inline mr-1" />}
+                  {s.replace('_', ' ')}
                 </button>
               ))}
             </div>
@@ -104,7 +104,7 @@ export default function TreeDetail() {
           </div>
         )}
 
-        {tree.status==='completed' && (
+        {tree.status === 'completed' && (
           <div className="bg-forest-50 border border-forest-200 rounded-2xl p-4 flex items-center gap-3">
             <CheckCircle2 size={24} className="text-forest-600 flex-shrink-0" />
             <div>
@@ -120,25 +120,27 @@ export default function TreeDetail() {
           {tree.trunk_diameter_cm && <div className="bg-white rounded-xl p-3 text-center shadow-sm"><p className="font-bold text-gray-800">{tree.trunk_diameter_cm}cm</p><p className="text-xs text-gray-400">Trunk ⌀</p></div>}
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          <button onClick={() => nav(`/trees/${code}/activity`)} className="bg-white rounded-xl p-3 flex flex-col items-center gap-1 shadow-sm active:scale-95 transition-transform">
-            <Activity size={18} className="text-forest-600" /><p className="text-xs text-gray-600">Activity</p>
-          </button>
-          <button onClick={() => nav(`/trees/${code}/health`)} className="bg-white rounded-xl p-3 flex flex-col items-center gap-1 shadow-sm active:scale-95 transition-transform">
-            <ClipboardList size={18} className="text-forest-600" /><p className="text-xs text-gray-600">Health Log</p>
-          </button>
-          <label className="bg-white rounded-xl p-3 flex flex-col items-center gap-1 shadow-sm active:scale-95 transition-transform cursor-pointer">
-            <Camera size={18} className={uploading?'text-gray-300':'text-forest-600'} />
-            <p className="text-xs text-gray-600">{uploading?'Uploading…':'Add Photo'}</p>
-            <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhoto} disabled={uploading} />
-          </label>
-        </div>
+        {!isVolunteer() && (
+          <div className="grid grid-cols-3 gap-2">
+            <button onClick={() => nav(`/trees/${code}/activity`)} className="bg-white rounded-xl p-3 flex flex-col items-center gap-1 shadow-sm active:scale-95 transition-transform">
+              <Activity size={18} className="text-forest-600" /><p className="text-xs text-gray-600">Activity</p>
+            </button>
+            <button onClick={() => nav(`/trees/${code}/health`)} className="bg-white rounded-xl p-3 flex flex-col items-center gap-1 shadow-sm active:scale-95 transition-transform">
+              <ClipboardList size={18} className="text-forest-600" /><p className="text-xs text-gray-600">Health Log</p>
+            </button>
+            <label className="bg-white rounded-xl p-3 flex flex-col items-center gap-1 shadow-sm active:scale-95 transition-transform cursor-pointer">
+              <Camera size={18} className={uploading ? 'text-gray-300' : 'text-forest-600'} />
+              <p className="text-xs text-gray-600">{uploading ? 'Uploading…' : 'Add Photo'}</p>
+              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhoto} disabled={uploading} />
+            </label>
+          </div>
+        )}
 
-        {photos.length>0 && (
+        {photos.length > 0 && (
           <div className="bg-white rounded-2xl p-4 shadow-sm">
             <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Photos</p>
             <div className="grid grid-cols-3 gap-1.5">
-              {photos.map((p:any) => (
+              {photos.map((p: any) => (
                 <div key={p.id} className="relative">
                   <img src={p.photo_url} alt={p.caption} className="rounded-xl object-cover w-full h-24" />
                   <span className="absolute bottom-1 left-1 text-xs bg-black/50 text-white px-1.5 py-0.5 rounded-lg capitalize">{p.photo_type}</span>

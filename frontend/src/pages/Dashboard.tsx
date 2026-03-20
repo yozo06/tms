@@ -7,7 +7,7 @@ import { Plus, AlertTriangle, CheckCircle2, Clock } from 'lucide-react'
 import Spinner from '../components/Spinner'
 
 export default function Dashboard() {
-  const { user } = useAuthStore()
+  const { user, isOwner } = useAuthStore()
   const nav = useNavigate()
   const [data, setData] = useState<any>(null)
   const [urgent, setUrgent] = useState<any[]>([])
@@ -30,9 +30,11 @@ export default function Dashboard() {
           <p className="text-xs text-gray-400 uppercase">Welcome back</p>
           <h1 className="text-2xl font-bold text-gray-800">{user?.name}</h1>
         </div>
-        <button onClick={() => nav('/trees/new')} className="w-10 h-10 bg-forest-600 rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform">
-          <Plus size={20} className="text-white" />
-        </button>
+        {isOwner() && (
+          <button onClick={() => nav('/trees/new')} className="w-10 h-10 bg-forest-600 rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform">
+            <Plus size={20} className="text-white" />
+          </button>
+        )}
       </div>
       <div className="grid grid-cols-2 gap-3 mb-4">
         {[

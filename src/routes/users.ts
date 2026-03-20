@@ -35,13 +35,13 @@ r.post('/', requireOwner, async (req, res) => {
 
 r.patch('/:id', async (req, res) => {
   const id = parseInt(req.params.id)
-  if (req.user!.role === 'employee' && req.user!.userId !== id)
+  if (req.user!.role !== 'owner' && req.user!.userId !== id)
     return res.status(403).json({ error: 'Cannot update another user' })
   const { name, phone, bio } = req.body
   const patch: Record<string, any> = {}
-  if (name)  patch.name  = name
+  if (name) patch.name = name
   if (phone) patch.phone = phone
-  if (bio)   patch.bio   = bio
+  if (bio) patch.bio = bio
   if (req.user!.role === 'owner') {
     if (req.body.role) patch.role = req.body.role
     if (req.body.is_active !== undefined) patch.is_active = req.body.is_active

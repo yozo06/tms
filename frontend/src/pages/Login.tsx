@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { login } from '../api/auth'
 import { useAuthStore } from '../store/auth.store'
 import toast from 'react-hot-toast'
@@ -50,6 +50,9 @@ export default function Login() {
           className="w-full bg-forest-600 text-white font-semibold py-3.5 rounded-xl active:scale-95 transition-transform disabled:opacity-60">
           {loading ? 'Signing in…' : 'Sign In'}
         </button>
+        <p className="text-center text-sm text-gray-500 pt-2">
+          Don't have an account? <Link to="/signup" className="text-forest-600 font-semibold hover:underline">Sign up</Link>
+        </p>
       </div>
     </div>
   )

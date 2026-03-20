@@ -9,6 +9,7 @@ interface AuthState {
   logout: () => void
   isOwner: () => boolean
   isEmployee: () => boolean
+  isVolunteer: () => boolean
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -27,5 +28,6 @@ export const useAuthStore = create<AuthState>()(
     },
     isOwner: () => get().user?.role === 'owner',
     isEmployee: () => get().user?.role === 'employee',
+    isVolunteer: () => get().user?.role === 'volunteer',
   }), { name: 'tms_auth' })
 )

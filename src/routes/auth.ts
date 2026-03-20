@@ -34,6 +34,28 @@ r.post('/login', async (req, res) => {
   })
 })
 
+r.post('/signup', async (req, res) => {
+  const { name, email, password } = req.body
+  if (!name || !email || !password) return res.status(400).json({ error: 'Name, email, and password are required' })
+
+  const existing = await db.from('users').select('id').eq('email', email.toLowerCase()).single()
+  if (existing.data) return res.status(400).json({ error: 'Email already in use' })
+
+  const hash = await hashPassword(password)
+  const { data: user, error } = await db.from('users').insert({
+    name, email: email.toLowerCase(), password_hash: hash, role: 'volunteer', is_active: true
+  }).select('id, name, email, role').single()
+
+  if (error || !user) return res.status(500).json({ error: error ? error.message : 'Failed to create user' })
+
+  const payload = { userId: user.id, email: user.email, role: user.role }
+  return res.status(201).json({
+    token: signToken(payload),
+    refreshToken: signRefreshToken(payload),
+    user
+  })
+})
+
 r.post('/refresh', (req, res) => {
   const { refreshToken } = req.body
   if (!refreshToken) return res.status(400).json({ error: 'Refresh token required' })

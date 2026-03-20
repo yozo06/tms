@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from './store/auth.store'
 import Layout from './components/Layout'
 import Login from './pages/Login'
+import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import FieldHome from './pages/FieldHome'
 import TreeList from './pages/TreeList'
@@ -28,6 +29,13 @@ function RequireOwner({ children }: { children: JSX.Element }) {
   return children
 }
 
+function RequireEmployeeOrOwner({ children }: { children: JSX.Element }) {
+  const { user, token } = useAuthStore()
+  if (!user || !token) return <Navigate to="/login" replace />
+  if (user.role === 'volunteer') return <Navigate to="/home" replace />
+  return children
+}
+
 function HomeRedirect() {
   const { user } = useAuthStore()
   if (!user) return <Navigate to="/login" replace />
@@ -40,14 +48,15 @@ export default function App() {
       <Routes>
         <Route path="/tree/:code" element={<PublicTree />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route element={<RequireAuth><Layout /></RequireAuth>}>
           <Route path="/home" element={<HomeRedirect />} />
           <Route path="/trees" element={<TreeList />} />
           <Route path="/trees/new" element={<RequireOwner><TreeAdd /></RequireOwner>} />
           <Route path="/trees/:code" element={<TreeDetail />} />
           <Route path="/trees/:code/edit" element={<RequireOwner><TreeEdit /></RequireOwner>} />
-          <Route path="/trees/:code/health" element={<HealthLog />} />
-          <Route path="/trees/:code/activity" element={<ActivityLog />} />
+          <Route path="/trees/:code/health" element={<RequireEmployeeOrOwner><HealthLog /></RequireEmployeeOrOwner>} />
+          <Route path="/trees/:code/activity" element={<RequireEmployeeOrOwner><ActivityLog /></RequireEmployeeOrOwner>} />
           <Route path="/map" element={<RequireOwner><MapView /></RequireOwner>} />
           <Route path="/employees" element={<RequireOwner><Employees /></RequireOwner>} />
           <Route path="/profile" element={<Profile />} />

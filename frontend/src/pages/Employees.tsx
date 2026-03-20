@@ -54,7 +54,7 @@ export default function Employees() {
     } catch { toast.error('Failed to update') }
   }
 
-  const ROLE_COLORS: Record<string, string> = { owner: 'bg-forest-100 text-forest-700', employee: 'bg-blue-100 text-blue-700', volunteer: 'bg-purple-100 text-purple-700' }
+  const ROLE_COLORS: Record<string, string> = { owner: 'bg-forest-100 text-forest-700', employee: 'bg-blue-100 text-blue-700', volunteer: 'bg-purple-100 text-purple-700', viewer: 'bg-gray-100 text-gray-700' }
 
   return (
     <div className="px-4 pt-12 pb-8">
@@ -71,7 +71,7 @@ export default function Employees() {
           ))}
           <div><label className="text-xs text-gray-500">Role</label>
             <select value={form.role} onChange={set('role')} className="w-full mt-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
-              <option value="employee">Employee</option><option value="volunteer">Volunteer</option>
+              <option value="employee">Employee</option><option value="volunteer">Volunteer</option><option value="viewer">Viewer</option>
             </select>
           </div>
           <button onClick={submit} disabled={saving} className="w-full bg-forest-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60">{saving ? 'Adding…' : 'Add Member'}</button>
@@ -88,7 +88,7 @@ export default function Employees() {
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" placeholder="Phone" />
                 <select value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
-                  <option value="employee">Employee</option><option value="volunteer">Volunteer</option>
+                  <option value="employee">Employee</option><option value="volunteer">Volunteer</option><option value="viewer">Viewer</option>
                 </select>
                 <div className="flex gap-2">
                   <button onClick={() => saveEdit(u.id)} className="flex-1 bg-forest-600 text-white text-sm font-medium py-2 rounded-xl flex items-center justify-center gap-1"><Check size={14} /> Save</button>
