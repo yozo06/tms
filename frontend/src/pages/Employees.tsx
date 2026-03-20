@@ -78,11 +78,11 @@ export default function Employees() {
           </div>
         </div>
       ) : (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-3 w-full">
           <div className="w-10 h-10 rounded-full bg-forest-100 flex items-center justify-center text-forest-700 font-bold flex-shrink-0">{u.name[0]}</div>
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-gray-800 truncate">{u.name}</p>
-            <p className="text-xs text-gray-400 truncate">{u.email}</p>
+          <div className="flex-1 min-w-[0px] overflow-hidden">
+            <p className="font-medium text-gray-800 truncate" title={u.name}>{u.name}</p>
+            <p className="text-xs text-gray-400 truncate" title={u.email}>{u.email}</p>
             {u.phone && <p className="text-xs text-gray-400 truncate">{u.phone}</p>}
           </div>
           <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
