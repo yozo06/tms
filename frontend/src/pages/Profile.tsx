@@ -4,7 +4,7 @@ import { changePassword } from '../api/auth'
 import { updateUser } from '../api/users'
 import { useAuthStore } from '../store/auth.store'
 import toast from 'react-hot-toast'
-import { LogOut, Lock, Edit2, Check } from 'lucide-react'
+import { LogOut, Lock, Edit2, Check, Info } from 'lucide-react'
 
 export default function Profile() {
   const { user, logout, setUser } = useAuthStore()
@@ -50,6 +50,9 @@ export default function Profile() {
       <div className="space-y-3">
         <button onClick={() => setShowEdit(f => !f)} className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left active:scale-95 transition-transform">
           <Edit2 size={18} className="text-gray-400" /><span className="font-medium text-gray-700">Edit Profile</span>
+        </button>
+        <button onClick={() => nav('/about')} className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left active:scale-95 transition-transform">
+          <Info size={18} className="text-gray-400" /><span className="font-medium text-gray-700">About WildArc</span>
         </button>
         {showEdit && (
           <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">

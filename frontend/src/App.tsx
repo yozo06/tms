@@ -15,6 +15,7 @@ import MapView from './pages/MapView'
 import Employees from './pages/Employees'
 import Profile from './pages/Profile'
 import PublicTree from './pages/PublicTree'
+import About from './pages/About'
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { user, token } = useAuthStore()
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="/map" element={<RequireOwner><MapView /></RequireOwner>} />
           <Route path="/employees" element={<RequireOwner><Employees /></RequireOwner>} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/about" element={<About />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>
       </Routes>
