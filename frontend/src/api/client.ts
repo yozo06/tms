@@ -7,6 +7,14 @@ export const client = axios.create({ baseURL: API })
 client.interceptors.request.use(cfg => {
   const token = localStorage.getItem('tms_token')
   if (token) cfg.headers.Authorization = `Bearer ${token}`
+
+  try {
+    const authState = JSON.parse(localStorage.getItem('tms_auth') || '{}')
+    if (authState?.state?.activeProjectId) {
+      cfg.headers['x-project-id'] = authState.state.activeProjectId
+    }
+  } catch { }
+
   return cfg
 })
 

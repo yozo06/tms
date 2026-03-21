@@ -4,8 +4,10 @@ import { persist } from 'zustand/middleware'
 interface User { id: number; name: string; email: string; role: string }
 interface AuthState {
   user: User | null; token: string | null; refreshToken: string | null
+  activeProjectId: string | null
   setAuth: (user: User, token: string, refreshToken: string) => void
   setUser: (user: User) => void
+  setActiveProject: (id: string) => void
   logout: () => void
   isOwner: () => boolean
   isEmployee: () => boolean
@@ -14,17 +16,18 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist((set, get) => ({
-    user: null, token: null, refreshToken: null,
+    user: null, token: null, refreshToken: null, activeProjectId: null,
     setAuth: (user, token, refreshToken) => {
       localStorage.setItem('tms_token', token)
       localStorage.setItem('tms_refresh', refreshToken)
       set({ user, token, refreshToken })
     },
     setUser: (user) => set({ user }),
+    setActiveProject: (id) => set({ activeProjectId: id }),
     logout: () => {
       localStorage.removeItem('tms_token')
       localStorage.removeItem('tms_refresh')
-      set({ user: null, token: null, refreshToken: null })
+      set({ user: null, token: null, refreshToken: null, activeProjectId: null })
     },
     isOwner: () => get().user?.role === 'owner',
     isEmployee: () => get().user?.role === 'employee',

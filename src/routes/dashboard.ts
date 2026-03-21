@@ -7,8 +7,13 @@ r.use(authenticate)
 
 r.get('/stats', async (req, res) => {
     try {
-        let q = db.from('trees').select('status, action, priority, assigned_to', { count: 'exact' })
-        if (req.user!.role === 'employee') q = q.eq('assigned_to', req.user!.userId)
+        if (!req.projectId) return res.status(400).json({ error: 'Project context required' })
+
+        let q = db.from('trees').select('status, action, priority, assigned_to', { count: 'exact' }).eq('project_id', req.projectId)
+
+        if (req.user!.role === 'employee' && req.projectRole !== 'admin') {
+            q = q.eq('assigned_to', req.user!.userId)
+        }
 
         const { data: trees, error } = await q
         if (error) return res.status(500).json({ error: error.message })
@@ -23,8 +28,8 @@ r.get('/stats', async (req, res) => {
             urgent: trees.filter((t: any) => t.priority === 'urgent').length
         }
 
-        // Get zone summary
-        const { data: zones } = await db.from('zone_summary').select('*')
+        // Get zone summary per project
+        const { data: zones } = await db.from('land_zones').select('zone_name, description').eq('project_id', req.projectId)
 
         return res.json({ stats, zones })
     } catch (err: any) {

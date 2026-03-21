@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS public.project_members (
 
 -- 4. Alter existing core tables to belong to dynamically created projects later
 ALTER TABLE public.trees ADD COLUMN IF NOT EXISTS project_id uuid REFERENCES public.projects(id) ON DELETE CASCADE;
-ALTER TABLE public.zones ADD COLUMN IF NOT EXISTS project_id uuid REFERENCES public.projects(id) ON DELETE CASCADE;
+ALTER TABLE public.land_zones ADD COLUMN IF NOT EXISTS project_id uuid REFERENCES public.projects(id) ON DELETE CASCADE;
 
 -- Note: In a production environment with existing data, we would:
 -- a) CREATE a default project.

@@ -2,7 +2,7 @@ import { Router } from 'express'
 import multer from 'multer'
 import { db } from '../lib/supabase'
 import { uploadToDrive } from '../lib/drive'
-import { authenticate, requireOwner } from '../middleware/authenticate'
+import { authenticate, requireProjectAdmin, requireProjectEditor } from '../middleware/authenticate'
 import { validate } from '../middleware/validate'
 import { treeCreateSchema, treeUpdateSchema, treeActivitySchema, treeHealthSchema, treeContributorSchema } from '../schemas'
 
@@ -62,13 +62,15 @@ r.get('/', async (req, res) => {
   const { zone, action, status, priority, assigned_to, search, page = '1', limit = '50' } = req.query
   const offset = (parseInt(page as string) - 1) * parseInt(limit as string)
 
+  if (!req.projectId) return res.status(400).json({ error: 'Project context required' })
+
   let q = db.from('trees').select(`
     id, tree_code, custom_common_name, health_score, action, status, priority,
     coord_x, coord_y, updated_at,
     species:species_id ( common_name, scientific_name, ecosystem_roles ),
     land_zones:zone_id ( zone_code, zone_name ),
     assigned_user:assigned_to ( name )
-  `, { count: 'exact' })
+  `, { count: 'exact' }).eq('project_id', req.projectId)
 
   if (zone) q = q.eq('zone_id', zone)
   if (action) q = q.eq('action', action)
@@ -76,7 +78,7 @@ r.get('/', async (req, res) => {
   if (priority) q = q.eq('priority', priority)
   if (assigned_to) q = q.eq('assigned_to', assigned_to)
   if (search) q = q.ilike('tree_code', `%${search}%`)
-  if (req.user!.role === 'employee') q = q.eq('assigned_to', req.user!.userId)
+  if (req.user!.role === 'employee' && req.projectRole !== 'admin') q = q.eq('assigned_to', req.user!.userId)
 
   const { data, error, count } = await q.order('tree_code').range(offset, offset + parseInt(limit as string) - 1)
   if (error) return res.status(500).json({ error: error.message })
@@ -98,15 +100,17 @@ r.get('/:code', async (req, res) => {
       )
     `)
     .eq('tree_code', req.params.code.toUpperCase())
+    .eq('project_id', req.projectId)
     .single()
   if (error || !tree) return res.status(404).json({ error: 'Tree not found' })
   return res.json(tree)
 })
 
-r.post('/', requireOwner, validate(treeCreateSchema), async (req, res) => {
+r.post('/', requireProjectEditor, validate(treeCreateSchema), async (req, res) => {
   const { tree_code } = req.body
   if (!tree_code) return res.status(400).json({ error: 'tree_code is required' })
-  const payload = { ...req.body, tree_code: tree_code.toUpperCase(), added_by: req.user!.userId }
+  if (!req.projectId) return res.status(400).json({ error: 'Project context required' })
+  const payload = { ...req.body, tree_code: tree_code.toUpperCase(), added_by: req.user!.userId, project_id: req.projectId }
   const { data, error } = await db.from('trees').insert(payload).select().single()
   if (error) return res.status(400).json({ error: error.message })
   await db.from('tree_activity_log').insert({
@@ -117,10 +121,10 @@ r.post('/', requireOwner, validate(treeCreateSchema), async (req, res) => {
   return res.status(201).json(data)
 })
 
-r.patch('/:code', validate(treeUpdateSchema), async (req, res) => {
-  const { data: existing } = await db.from('trees').select('id, status').eq('tree_code', req.params.code.toUpperCase()).single()
-  if (!existing) return res.status(404).json({ error: 'Tree not found' })
-  const isEmployee = req.user!.role === 'employee'
+r.patch('/:code', requireProjectEditor, validate(treeUpdateSchema), async (req, res) => {
+  const { data: existing } = await db.from('trees').select('id, status').eq('tree_code', req.params.code.toUpperCase()).eq('project_id', req.projectId).single()
+  if (!existing) return res.status(404).json({ error: 'Tree not found in project' })
+  const isEmployee = req.user!.role === 'employee' && req.projectRole !== 'admin'
   const allowed = isEmployee ? ['status', 'action_notes', 'health_score'] : Object.keys(req.body)
   const patch: Record<string, any> = {}
   allowed.forEach(k => { if (req.body[k] !== undefined) patch[k] = req.body[k] })
@@ -138,15 +142,15 @@ r.patch('/:code', validate(treeUpdateSchema), async (req, res) => {
   return res.json(data)
 })
 
-r.delete('/:code', requireOwner, async (req, res) => {
-  const { error } = await db.from('trees').delete().eq('tree_code', req.params.code.toUpperCase())
+r.delete('/:code', requireProjectAdmin, async (req, res) => {
+  const { error } = await db.from('trees').delete().eq('tree_code', req.params.code.toUpperCase()).eq('project_id', req.projectId)
   if (error) return res.status(400).json({ error: error.message })
   return res.json({ success: true })
 })
 
 // ACTIVITY
 r.get('/:code/activity', async (req, res) => {
-  const { data: tree } = await db.from('trees').select('id').eq('tree_code', req.params.code.toUpperCase()).single()
+  const { data: tree } = await db.from('trees').select('id').eq('tree_code', req.params.code.toUpperCase()).eq('project_id', req.projectId).single()
   if (!tree) return res.status(404).json({ error: 'Tree not found' })
   const { data, error } = await db.from('tree_activity_log')
     .select('*, users:performed_by(name, role)')
@@ -156,7 +160,7 @@ r.get('/:code/activity', async (req, res) => {
 })
 
 r.post('/:code/activity', validate(treeActivitySchema), async (req, res) => {
-  const { data: tree } = await db.from('trees').select('id').eq('tree_code', req.params.code.toUpperCase()).single()
+  const { data: tree } = await db.from('trees').select('id').eq('tree_code', req.params.code.toUpperCase()).eq('project_id', req.projectId).single()
   if (!tree) return res.status(404).json({ error: 'Tree not found' })
   const { action_taken, notes } = req.body
   if (!action_taken) return res.status(400).json({ error: 'action_taken required' })
@@ -169,7 +173,7 @@ r.post('/:code/activity', validate(treeActivitySchema), async (req, res) => {
 
 // HEALTH
 r.get('/:code/health', async (req, res) => {
-  const { data: tree } = await db.from('trees').select('id').eq('tree_code', req.params.code.toUpperCase()).single()
+  const { data: tree } = await db.from('trees').select('id').eq('tree_code', req.params.code.toUpperCase()).eq('project_id', req.projectId).single()
   if (!tree) return res.status(404).json({ error: 'Tree not found' })
   const { data, error } = await db.from('tree_health_observations')
     .select('*, users:observed_by(name)')
@@ -179,7 +183,7 @@ r.get('/:code/health', async (req, res) => {
 })
 
 r.post('/:code/health', validate(treeHealthSchema), async (req, res) => {
-  const { data: tree } = await db.from('trees').select('id').eq('tree_code', req.params.code.toUpperCase()).single()
+  const { data: tree } = await db.from('trees').select('id').eq('tree_code', req.params.code.toUpperCase()).eq('project_id', req.projectId).single()
   if (!tree) return res.status(404).json({ error: 'Tree not found' })
   const { data, error } = await db.from('tree_health_observations').insert({
     tree_id: tree.id, observed_by: req.user!.userId, ...req.body
@@ -191,7 +195,7 @@ r.post('/:code/health', validate(treeHealthSchema), async (req, res) => {
 
 // PHOTOS
 r.get('/:code/photos', async (req, res) => {
-  const { data: tree } = await db.from('trees').select('id').eq('tree_code', req.params.code.toUpperCase()).single()
+  const { data: tree } = await db.from('trees').select('id').eq('tree_code', req.params.code.toUpperCase()).eq('project_id', req.projectId).single()
   if (!tree) return res.status(404).json({ error: 'Tree not found' })
   const { data, error } = await db.from('tree_photos')
     .select('*, users:uploaded_by(name)')
@@ -203,7 +207,7 @@ r.get('/:code/photos', async (req, res) => {
 r.post('/:code/photos', upload.single('photo'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Photo file required' })
   const code = req.params.code.toUpperCase()
-  const { data: tree } = await db.from('trees').select('id').eq('tree_code', code).single()
+  const { data: tree } = await db.from('trees').select('id').eq('tree_code', code).eq('project_id', req.projectId).single()
   if (!tree) return res.status(404).json({ error: 'Tree not found' })
   const ts = Date.now()
   const ext = req.file.originalname.split('.').pop()
@@ -223,7 +227,7 @@ r.post('/:code/photos', upload.single('photo'), async (req, res) => {
 
 // CONTRIBUTORS
 r.get('/:code/contributors', async (req, res) => {
-  const { data: tree } = await db.from('trees').select('id').eq('tree_code', req.params.code.toUpperCase()).single()
+  const { data: tree } = await db.from('trees').select('id').eq('tree_code', req.params.code.toUpperCase()).eq('project_id', req.projectId).single()
   if (!tree) return res.status(404).json({ error: 'Tree not found' })
   const { data, error } = await db.from('tree_contributors')
     .select('*, users:user_id(id, name, email, role, bio, profile_photo)')
@@ -232,8 +236,8 @@ r.get('/:code/contributors', async (req, res) => {
   return res.json(data)
 })
 
-r.post('/:code/contributors', requireOwner, validate(treeContributorSchema), async (req, res) => {
-  const { data: tree } = await db.from('trees').select('id').eq('tree_code', req.params.code.toUpperCase()).single()
+r.post('/:code/contributors', requireProjectAdmin, validate(treeContributorSchema), async (req, res) => {
+  const { data: tree } = await db.from('trees').select('id').eq('tree_code', req.params.code.toUpperCase()).eq('project_id', req.projectId).single()
   if (!tree) return res.status(404).json({ error: 'Tree not found' })
   const { user_id, role, since_date, notes, is_public } = req.body
   if (!user_id || !role) return res.status(400).json({ error: 'user_id and role required' })
@@ -244,7 +248,7 @@ r.post('/:code/contributors', requireOwner, validate(treeContributorSchema), asy
   return res.status(201).json(data)
 })
 
-r.delete('/:code/contributors/:id', requireOwner, async (req, res) => {
+r.delete('/:code/contributors/:id', requireProjectAdmin, async (req, res) => {
   const { error } = await db.from('tree_contributors').delete().eq('id', req.params.id)
   if (error) return res.status(400).json({ error: error.message })
   return res.json({ success: true })
