@@ -5,6 +5,7 @@ import { getTrees } from '../api/trees'
 import { useAuthStore } from '../store/auth.store'
 import { Plus, AlertTriangle, CheckCircle2, Clock } from 'lucide-react'
 import Spinner from '../components/Spinner'
+import ProjectSwitcher from '../components/ProjectSwitcher'
 
 export default function Dashboard() {
   const { user, isOwner } = useAuthStore()
@@ -27,8 +28,10 @@ export default function Dashboard() {
     <div className="px-4 pt-12 pb-4">
       <div className="flex justify-between items-start mb-6">
         <div>
-          <p className="text-xs text-gray-400 uppercase">Welcome back</p>
-          <h1 className="text-2xl font-bold text-gray-800">{user?.name}</h1>
+          <div className="pointer-events-auto mb-2 relative z-50">
+            <ProjectSwitcher />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-800">Welcome, {user?.name.split(' ')[0]}</h1>
         </div>
         {isOwner() && (
           <button onClick={() => nav('/trees/new')} className="w-10 h-10 bg-forest-600 rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform">
