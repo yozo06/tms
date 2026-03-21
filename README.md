@@ -1,6 +1,11 @@
-# Tree Management System (TMS)
+# 🌿 WildArc
 
-A comprehensive, full-stack application built to track, manage, and maintain trees across various designated land zones. This system is designed for land owners, managers, and field workers to collaboratively monitor tree health, log activities, and track overall progress.
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](./LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+
+A comprehensive, open-source platform for regenerative permaculture farms. WildArc is designed to digitize ecological intelligence, starting with trees (Arbor module) and expanding to companion plants (Flora), soil/water (Terra), and fungi (Myco).
+
+📖 **[Read the Full Long-Term Vision & Module Roadmap here](./docs/vision/00_OVERVIEW.md)**
 
 ![Dashboard Preview](./frontend/public/icons/icon-512.png) 
 

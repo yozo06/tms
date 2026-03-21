@@ -1,0 +1,9 @@
+-- This file represents the initial schema state before multi-tenant features.
+-- The actual tables (users, trees, species, land_zones, tree_activity_log,
+-- tree_health_observations, tree_photos, tree_contributors) were created
+-- manually via Supabase Studio during the initial Arbor V1 prototype phase.
+--
+-- For future deployments, a comprehensive `dump.sql` of the initial schema
+-- will be placed here.
+--
+-- See `002_multi_tenant_migration.sql` for the first programmatic schema upgrade.
