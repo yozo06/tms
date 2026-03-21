@@ -8,7 +8,7 @@ import Spinner from '../components/Spinner'
 const ROLES = ['admin', 'editor', 'contributor', 'viewer']
 
 export default function Employees() {
-  const { isOwner } = useAuthStore()
+  const { isOwner, user } = useAuthStore()
   const [users, setUsers] = useState<any[]>([])
   const [showForm, setShowForm] = useState(false)
   const [showInactive, setShowInactive] = useState(false)
@@ -168,7 +168,7 @@ export default function Employees() {
               <input value={form.password} onChange={set('password')} type="password" className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-forest-300" placeholder="Temporary Password" />
 
               <button onClick={submit} disabled={saving} className="w-full bg-gray-900 border border-black text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 mt-2 hover:bg-black transition-colors shadow-lg shadow-gray-200 active:scale-[0.98] disabled:opacity-50">
-                {saving ? <Spinner size={20} /> : <><Check size={18} /> Add to Project</>}
+                {saving ? <Spinner /> : <><Check size={18} /> Add to Project</>}
               </button>
             </div>
           </div>
