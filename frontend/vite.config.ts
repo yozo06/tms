@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -43,7 +44,13 @@ export default defineConfig({
     })
   ],
   server: {
-    proxy: { '/api': 'http://localhost:3000' }
-    , allowedHosts: true
+    proxy: { '/api': 'http://localhost:3000' },
+    allowedHosts: true
   },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/setupTests.ts',
+    css: true,
+  }
 })
