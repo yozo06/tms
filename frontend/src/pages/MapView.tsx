@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getMapTrees } from '../api/map'
-import MapCanvas from '../components/MapCanvas'
-import { ActionBadge } from '../components/ActionBadge'
-import Spinner from '../components/Spinner'
+import { getMapTrees } from '../modules/arbor/api/map'
+import MapCanvas from '../modules/arbor/components/MapCanvas'
+import { ActionBadge } from '../modules/arbor/components/ActionBadge'
+import Spinner from '../core/components/Spinner'
 
 const LEGEND = [
   {key:'cut',color:'#ef4444'},{key:'trim',color:'#f59e0b'},{key:'keep',color:'#22c55e'},

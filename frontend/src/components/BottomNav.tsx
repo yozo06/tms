@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { LayoutDashboard, TreePine, Map, Users, User } from 'lucide-react'
-import { useAuthStore } from '../store/auth.store'
+import { useAuthStore } from '../core/store/auth.store'
 
 export default function BottomNav() {
   const { isOwner } = useAuthStore()
