@@ -23,7 +23,7 @@ Priority scores are recalculated daily using: **Impact × Phase Alignment ÷ Eff
 
 | # | Task | Score | Sprint | Status | Notes |
 |---|------|-------|--------|--------|-------|
-| C-03 | **Add rate limiting middleware (express-rate-limit)** | 90 | S1 | 🆕 New | Zero rate limiting on any endpoint. Login brute-forceable. Install express-rate-limit, add to auth + API routes. ~1-2 hours. |
+| C-03 | **Add rate limiting middleware (express-rate-limit)** | 90 | S1 | ✅ Done | Installed express-rate-limit v8. Auth limiter (5/15min) on /api/auth/login + /api/auth/signup. General API limiter (100/min) on /api/*. |
 | C-04 | **Add input sanitization middleware (express-validator / sanitize-html)** | 88 | S1 | 🆕 New | Zod validates shape only; no XSS protection on text fields. Add sanitization middleware to all POST/PATCH handlers. ~2 hours. |
 | C-05 | **Enforce project_id on trees/zones (NOT NULL + RLS)** | 85 | S3 | 🆕 New | project_id is nullable — multi-tenancy not enforced. Write migration SQL to backfill + set NOT NULL. ⚠️ Needs Yogesh to run migration in Supabase. |
 

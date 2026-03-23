@@ -4,6 +4,7 @@ import cors from 'cors'
 import path from 'path'
 import authModuleRoutes from './modules/auth'
 import arborModuleRoutes from './modules/arbor'
+import { authLimiter, apiLimiter } from './core/middleware/rateLimiter'
 
 const app = express()
 
@@ -47,6 +48,11 @@ app.get('/api/health', (_req, res) => {
   console.log('✅ Health check hit')
   res.json({ status: 'ok', ts: new Date().toISOString() })
 })
+
+// ── Rate limiting ─────────────────────────────────────────
+app.use('/api/auth/login', authLimiter)
+app.use('/api/auth/signup', authLimiter)
+app.use('/api', apiLimiter)
 
 app.use('/api/auth', authModuleRoutes)
 app.use('/api/arbor', arborModuleRoutes)
