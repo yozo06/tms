@@ -21,18 +21,15 @@
 
 ## 🔔 [2026-03-23] Review 49 uncommitted files in working tree — Watchdog Escalation
 **Detected by:** Watchdog (3 PM health check)
-**What's needed:** Run `git status` and `git diff` to verify the uncommitted changes are expected. The planner committed its migration work (`4397f9f`) but 49 files remain modified/deleted/untracked. Includes `frontend/src/` files (modified), `src/` backend files (deleted — moved to core/), and 4 untracked files (`wildarc-website/`, `move-files.js`). If everything looks correct, commit or discard as appropriate.
-**Impact if delayed:** Uncommitted work may be lost if the session resets. The wildarc-website files in particular appear to be new deliverables.
-**Status:** ⏳ Waiting
+**What's needed:** Committed in `0429a79` — all migration artifacts, website concepts, and watchdog logs.
+**Status:** ✅ Done (2026-03-23)
 
 ---
 
 ## 🔔 [2026-03-23] Enable GitHub Actions on WildArc repo
 **Blocking task:** H-07 (Sprint 2 — CI/CD workflow)
-**What's needed:** Go to GitHub repo → Settings → Actions → General → Enable "Allow all actions". The planner will create the workflow file, but Actions must be enabled for it to run.
-**Impact if delayed:** No CI until resolved. PRs can't be validated automatically.
-**Sprint:** S2 (starts ~Apr 7)
-**Status:** ⏳ Waiting
+**What's needed:** Yogesh confirmed GitHub Actions is already enabled.
+**Status:** ✅ Done (2026-03-23)
 
 ---
 
