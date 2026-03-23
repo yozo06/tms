@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getTree, updateTree, getPhotos, uploadPhoto, getActivity } from '../api/trees'
-import { useAuthStore } from '../store/auth.store'
-import { ActionBadge, PriorityBadge, StatusDot } from '../components/ActionBadge'
-import Spinner from '../components/Spinner'
+import { getTree, updateTree, getPhotos, uploadPhoto, getActivity } from '../modules/arbor/api/trees'
+import { useAuthStore } from '../core/store/auth.store'
+import { ActionBadge, PriorityBadge, StatusDot } from '../modules/arbor/components/ActionBadge'
+import Spinner from '../core/components/Spinner'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Camera, Activity, Edit2, CheckCircle2, MapPin, Calendar, Ruler } from 'lucide-react'
 

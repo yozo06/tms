@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { changePassword } from '../api/auth'
-import { updateUser } from '../api/users'
-import { useAuthStore } from '../store/auth.store'
+import { changePassword } from '../core/api/auth'
+import { updateUser } from '../settings/api/users'
+import { useAuthStore } from '../core/store/auth.store'
 import toast from 'react-hot-toast'
 import { LogOut, Lock, Edit2, Check } from 'lucide-react'
 
