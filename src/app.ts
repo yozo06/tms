@@ -4,6 +4,7 @@ import cors from 'cors'
 import path from 'path'
 import authModuleRoutes from './modules/auth'
 import arborModuleRoutes from './modules/arbor'
+import { sanitize } from './core/middleware/sanitize'
 
 const app = express()
 
@@ -42,6 +43,7 @@ app.use((req, _res, next) => {
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(sanitize)
 
 app.get('/api/health', (_req, res) => {
   console.log('✅ Health check hit')

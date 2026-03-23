@@ -34,7 +34,7 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold text-gray-800">Welcome, {user?.name.split(' ')[0]}</h1>
         </div>
         {isOwner() && (
-          <button onClick={() => nav('/trees/new')} className="w-10 h-10 bg-forest-600 rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform">
+          <button onClick={() => nav('/trees/new')} aria-label="Add new tree" className="w-10 h-10 bg-forest-600 rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform">
             <Plus size={20} className="text-white" />
           </button>
         )}

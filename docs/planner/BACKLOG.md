@@ -24,7 +24,7 @@ Priority scores are recalculated daily using: **Impact × Phase Alignment ÷ Eff
 | # | Task | Score | Sprint | Status | Notes |
 |---|------|-------|--------|--------|-------|
 | C-03 | **Add rate limiting middleware (express-rate-limit)** | 90 | S1 | 🆕 New | Zero rate limiting on any endpoint. Login brute-forceable. Install express-rate-limit, add to auth + API routes. ~1-2 hours. |
-| C-04 | **Add input sanitization middleware (express-validator / sanitize-html)** | 88 | S1 | 🆕 New | Zod validates shape only; no XSS protection on text fields. Add sanitization middleware to all POST/PATCH handlers. ~2 hours. |
+| C-04 | **Add input sanitization middleware (express-validator / sanitize-html)** | 88 | S1 | ✅ Done | Installed xss. Created src/core/middleware/sanitize.ts (recursive, handles nested objects). Applied globally in src/app.ts after body parsers. |
 | C-05 | **Enforce project_id on trees/zones (NOT NULL + RLS)** | 85 | S3 | 🆕 New | project_id is nullable — multi-tenancy not enforced. Write migration SQL to backfill + set NOT NULL. ⚠️ Needs Yogesh to run migration in Supabase. |
 
 ---
@@ -33,9 +33,9 @@ Priority scores are recalculated daily using: **Impact × Phase Alignment ÷ Eff
 
 | # | Task | Score | Sprint | Status | Notes |
 |---|------|-------|--------|--------|-------|
-| H-01 | **Add aria-labels to all icon-only buttons** | 78 | S1 | 🆕 New | Zero aria-labels in entire codebase. Audit all .tsx files, add labels. Batchable with H-02, H-03. ~2 hours. |
-| H-02 | **Add alt text to all img elements** | 75 | S1 | 🆕 New | Missing alt on TreeDetail photo, species images. Quick scan + fix. ~30 min. |
-| H-03 | **Fix tap targets (w-4 h-4 → w-5 h-5 min)** | 72 | S1 | 🆕 New | HealthLog checkboxes, icon buttons too small for field use. WCAG 2.5.5 requires 44px min. ~1 hour. |
+| H-01 | **Add aria-labels to all icon-only buttons** | 78 | S1 | ✅ Done | Added aria-label + aria-expanded to all icon-only buttons across modules/ and legacy pages/ (TreeDetail, TreeList, HealthLog, ActivityLog, Dashboard, MapView). |
+| H-02 | **Add alt text to all img elements** | 75 | S1 | ✅ Done | Added alt text to photo gallery imgs in TreeDetail.tsx (modules + pages). Cover image already had alt. |
+| H-03 | **Fix tap targets (w-4 h-4 → w-5 h-5 min)** | 72 | S1 | ✅ Done | HealthLog checkboxes: w-4→w-5, added min-h-[44px] + cursor-pointer to labels (modules + pages). |
 | H-04 | **Centralize config values into config.ts** | 68 | S1 | 🆕 New | JWT expiry, pagination limits, upload size, API URLs hardcoded across files. Create `src/core/config.ts`. ~1-2 hours. |
 | H-05 | **Centralize color constants (actionColors.ts)** | 65 | S1 | 🆕 New | MapCanvas/MapView have hardcoded hex colors. Create `frontend/src/core/constants/actionColors.ts` with palette from design spec. ~1 hour. |
 | H-06 | **Fix rollup/vite build (ARM64 native module)** | 70 | S1 | 🆕 New | npm run build fails with @rollup/rollup-linux-arm64-gnu not found. Fix: `cd frontend && npm install`. ~15 min. |

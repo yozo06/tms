@@ -45,6 +45,8 @@ export default function TreeList() {
         <h1 className="text-2xl font-bold text-gray-800">Trees</h1>
         <div className="flex gap-2">
           <button onClick={() => setShowFilters(f => !f)}
+            aria-label="Toggle filters"
+            aria-expanded={showFilters}
             className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-colors relative ${showFilters ? 'bg-forest-600 border-forest-600 text-white' : 'border-gray-200 text-gray-500'}`}>
             <Filter size={16} />
             {activeFilterCount > 0 && !showFilters && (
@@ -53,7 +55,7 @@ export default function TreeList() {
               </span>
             )}
           </button>
-          {isOwner() && <button onClick={() => nav('/trees/new')} className="w-9 h-9 bg-forest-600 rounded-xl flex items-center justify-center text-white"><Plus size={18} /></button>}
+          {isOwner() && <button onClick={() => nav('/trees/new')} aria-label="Add new tree" className="w-9 h-9 bg-forest-600 rounded-xl flex items-center justify-center text-white"><Plus size={18} /></button>}
         </div>
       </div>
       <div className="relative mb-3">
