@@ -10,6 +10,23 @@
 
 ---
 
+## 🔔 [2026-03-23] Fix Vite/Rollup build (ARM64 native module) — Watchdog Escalation
+**Detected by:** Watchdog (3 PM health check)
+**What's needed:** Run `cd frontend && rm -rf node_modules && npm install` to reinstall the ARM64 rollup native binary. This is a one-time fix. Tracked as H-06 in the backlog.
+**Impact if delayed:** `npm run build` continues to fail. CI/CD (H-07) can't be set up until build works. Vite dev server is unaffected.
+**Note:** TypeScript (tsc) is clean — 0 errors. This is purely a native binary issue, not a code error.
+**Status:** ⏳ Waiting
+
+---
+
+## 🔔 [2026-03-23] Review 49 uncommitted files in working tree — Watchdog Escalation
+**Detected by:** Watchdog (3 PM health check)
+**What's needed:** Run `git status` and `git diff` to verify the uncommitted changes are expected. The planner committed its migration work (`4397f9f`) but 49 files remain modified/deleted/untracked. Includes `frontend/src/` files (modified), `src/` backend files (deleted — moved to core/), and 4 untracked files (`wildarc-website/`, `move-files.js`). If everything looks correct, commit or discard as appropriate.
+**Impact if delayed:** Uncommitted work may be lost if the session resets. The wildarc-website files in particular appear to be new deliverables.
+**Status:** ⏳ Waiting
+
+---
+
 ## 🔔 [2026-03-23] Enable GitHub Actions on WildArc repo
 **Blocking task:** H-07 (Sprint 2 — CI/CD workflow)
 **What's needed:** Go to GitHub repo → Settings → Actions → General → Enable "Allow all actions". The planner will create the workflow file, but Actions must be enabled for it to run.

@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createTree } from '../api/trees'
-import { getSpecies, getZones } from '../api/species'
-import { getUsers } from '../api/users'
+import { createTree } from '../modules/arbor/api/trees'
+import { getSpecies, getZones } from '../modules/arbor/api/species'
+import { getUsers } from '../settings/api/users'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Plus } from 'lucide-react'
-import SpeciesModal from '../components/SpeciesModal'
-import ZoneModal from '../components/ZoneModal'
-import MapPicker from '../components/MapPicker'
-import { getMapTrees } from '../api/map'
+import SpeciesModal from '../modules/arbor/components/SpeciesModal'
+import ZoneModal from '../modules/arbor/components/ZoneModal'
+import MapPicker from '../modules/arbor/components/MapPicker'
+import { getMapTrees } from '../modules/arbor/api/map'
 
 export default function TreeAdd() {
   const nav = useNavigate()
@@ -103,7 +103,7 @@ export default function TreeAdd() {
           <MapPicker
             trees={allTrees}
             value={form.coord_x ? { x: Number(form.coord_x), y: Number(form.coord_y) } : undefined}
-            onChange={(x, y) => setForm(f => ({ ...f, coord_x: x.toString(), coord_y: y.toString() }))}
+            onChange={(x: any, y: any) => setForm(f => ({ ...f, coord_x: x.toString(), coord_y: y.toString() }))}
           />
           <div className="grid grid-cols-2 gap-3 mt-2">
             <Field label="X Coord (m)" k="coord_x" type="number" step="0.001" form={form} onChange={set('coord_x')} />
@@ -132,7 +132,7 @@ export default function TreeAdd() {
       {showSpeciesModal && (
         <SpeciesModal
           onClose={() => setShowSpeciesModal(false)}
-          onSuccess={(s) => {
+          onSuccess={(s: any) => {
             setSpecies(prev => [...prev, s])
             setForm(f => ({ ...f, species_id: s.id }))
           }}
@@ -141,7 +141,7 @@ export default function TreeAdd() {
       {showZoneModal && (
         <ZoneModal
           onClose={() => setShowZoneModal(false)}
-          onSuccess={(z) => {
+          onSuccess={(z: any) => {
             setZones(prev => [...prev, z])
             setForm(f => ({ ...f, zone_id: z.id }))
           }}
