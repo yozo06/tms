@@ -13,23 +13,23 @@ export interface Tree {
   assigned_to?: number
 }
 
-export const getPublicTree = (code: string) => client.get(`/trees/${code}/public`).then(r => r.data)
-export const getTrees = (params?: Record<string, any>) => client.get('/trees', { params }).then(r => r.data)
-export const getTree = (code: string) => client.get(`/trees/${code}`).then(r => r.data)
-export const createTree = (data: any) => client.post('/trees', data).then(r => r.data)
-export const updateTree = (code: string, data: any) => client.patch(`/trees/${code}`, data).then(r => r.data)
-export const deleteTree = (code: string) => client.delete(`/trees/${code}`).then(r => r.data)
-export const getActivity = (code: string) => client.get(`/trees/${code}/activity`).then(r => r.data)
+export const getPublicTree = (code: string) => client.get(`/trees/${code}/public`).then((r: any) => r.data)
+export const getTrees = (params?: Record<string, any>) => client.get('/trees', { params }).then((r: any) => r.data)
+export const getTree = (code: string) => client.get(`/trees/${code}`).then((r: any) => r.data)
+export const createTree = (data: any) => client.post('/trees', data).then((r: any) => r.data)
+export const updateTree = (code: string, data: any) => client.patch(`/trees/${code}`, data).then((r: any) => r.data)
+export const deleteTree = (code: string) => client.delete(`/trees/${code}`).then((r: any) => r.data)
+export const getActivity = (code: string) => client.get(`/trees/${code}/activity`).then((r: any) => r.data)
 export const addActivity = (code: string, action_taken: string, notes?: string) =>
-  client.post(`/trees/${code}/activity`, { action_taken, notes }).then(r => r.data)
-export const getHealth = (code: string) => client.get(`/trees/${code}/health`).then(r => r.data)
-export const addHealth = (code: string, data: any) => client.post(`/trees/${code}/health`, data).then(r => r.data)
-export const getPhotos = (code: string) => client.get(`/trees/${code}/photos`).then(r => r.data)
+  client.post(`/trees/${code}/activity`, { action_taken, notes }).then((r: any) => r.data)
+export const getHealth = (code: string) => client.get(`/trees/${code}/health`).then((r: any) => r.data)
+export const addHealth = (code: string, data: any) => client.post(`/trees/${code}/health`, data).then((r: any) => r.data)
+export const getPhotos = (code: string) => client.get(`/trees/${code}/photos`).then((r: any) => r.data)
 export const uploadPhoto = (code: string, file: File, type: string, caption?: string) => {
   const fd = new FormData()
   fd.append('photo', file); fd.append('photo_type', type)
   if (caption) fd.append('caption', caption)
-  return client.post(`/trees/${code}/photos`, fd, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data)
+  return client.post(`/trees/${code}/photos`, fd, { headers: { 'Content-Type': 'multipart/form-data' } }).then((r: any) => r.data)
 }
-export const getContributors = (code: string) => client.get(`/trees/${code}/contributors`).then(r => r.data)
-export const addContributor = (code: string, data: any) => client.post(`/trees/${code}/contributors`, data).then(r => r.data)
+export const getContributors = (code: string) => client.get(`/trees/${code}/contributors`).then((r: any) => r.data)
+export const addContributor = (code: string, data: any) => client.post(`/trees/${code}/contributors`, data).then((r: any) => r.data)

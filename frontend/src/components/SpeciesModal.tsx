@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
-import { createSpecies } from '../api/species'
+import { createSpecies } from '../modules/arbor/api/species'
 import toast from 'react-hot-toast'
 
 export default function SpeciesModal({ onClose, onSuccess }: { onClose: () => void, onSuccess: (newSpecies: any) => void }) {

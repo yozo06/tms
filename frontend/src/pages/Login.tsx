@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { login } from '../api/auth'
-import { useAuthStore } from '../store/auth.store'
+import { login } from '../core/api/auth'
+import { useAuthStore } from '../core/store/auth.store'
 import toast from 'react-hot-toast'
 import { Leaf } from 'lucide-react'
 

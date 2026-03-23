@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import type { Tree } from '../api/trees'
+import type { Tree } from '../modules/arbor/api/trees'
 import { ActionBadge, StatusDot } from './ActionBadge'
 import HealthBadge from './HealthBadge'
 
