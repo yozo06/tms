@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getTree, updateTree } from '../api/trees'
-import { getSpecies, getZones } from '../api/species'
-import { getUsers } from '../api/users'
+import { getTree, updateTree } from '../modules/arbor/api/trees'
+import { getSpecies, getZones } from '../modules/arbor/api/species'
+import { getUsers } from '../settings/api/users'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Trash2 } from 'lucide-react'
-import Spinner from '../components/Spinner'
-import { deleteTree } from '../api/trees'
+import Spinner from '../core/components/Spinner'
+import { deleteTree } from '../modules/arbor/api/trees'
 
 export default function TreeEdit() {
     const { code } = useParams()

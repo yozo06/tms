@@ -2,13 +2,8 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import path from 'path'
-import authRoutes from './routes/auth'
-import treeRoutes from './routes/trees'
-import mapRoutes from './routes/map'
-import userRoutes from './routes/users'
-import speciesRoutes from './routes/species'
-import zoneRoutes from './routes/zones'
-import dashboardRoutes from './routes/dashboard'
+import authModuleRoutes from './modules/auth'
+import arborModuleRoutes from './modules/arbor'
 
 const app = express()
 
@@ -53,13 +48,8 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', ts: new Date().toISOString() })
 })
 
-app.use('/api/auth', authRoutes)
-app.use('/api/trees', treeRoutes)
-app.use('/api/map', mapRoutes)
-app.use('/api/users', userRoutes)
-app.use('/api/species', speciesRoutes)
-app.use('/api/zones', zoneRoutes)
-app.use('/api/dashboard', dashboardRoutes)
+app.use('/api/auth', authModuleRoutes)
+app.use('/api/arbor', arborModuleRoutes)
 
 // Serve frontend in production
 if (process.env.NODE_ENV === 'production') {

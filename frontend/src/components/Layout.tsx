@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import BottomNav from './BottomNav'
-import { useAuthStore } from '../store/auth.store'
+import { useAuthStore } from '../core/store/auth.store'
 
 export default function Layout() {
   const { user } = useAuthStore()
