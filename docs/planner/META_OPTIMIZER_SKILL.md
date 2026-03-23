@@ -29,6 +29,8 @@ Find the project root at the user's mounted workspace folder. Look for `package.
 1. Read all steward reports from the last 7 days in `docs/steward/`
 2. Read all planner session logs from the last 7 days in `docs/planner/sessions/`
 3. Read the current `docs/planner/BACKLOG.md` — note how many tasks are done, pending, blocked
+4. Read `docs/ops/NEEDS_HUMAN.md` — check for unresolved human-action items
+5. Check for orphaned checkpoint files in `docs/planner/sessions/.checkpoint` — indicates a planner crash
 
 ### STEP 2 — Pattern Analysis
 
@@ -52,6 +54,14 @@ Answer these questions from your reading. Write your analysis down (it becomes p
 - Are the priority scores accurate? (High-score items should be getting done first)
 - Are there any tasks that have been in the backlog for 7+ days without progress? (Signals they're blocked or wrongly scored)
 - Are Critical items getting cleared within 1-2 sessions?
+
+**Agent Health & Reliability:**
+- How many days out of 7 did the steward produce a report? (Expected: 7/7)
+- How many days out of 7 did the planner produce a session log? (Expected: 6/7 or 7/7)
+- Were there any orphaned checkpoint files? (Indicates planner crash — needs investigation)
+- Did the watchdog flag any issues this week? Check `docs/ops/WATCHDOG_LOG.md`
+- Are there unresolved items in `docs/ops/NEEDS_HUMAN.md` older than 3 days? (Escalate urgency)
+- Is the planner's velocity stable, improving, or declining? (Tasks completed per session)
 
 **Overall Trajectory:**
 - Is WildArc getting closer to Phase 1 OSS launch readiness?
@@ -109,8 +119,11 @@ Append to `docs/ops/HEALTH_LOG.md`:
 ```markdown
 ## YYYY-MM-DD
 
-**Steward reports read:** N
-**Planner sessions read:** N
+**Steward reports read:** N/7 expected
+**Planner sessions read:** N/7 expected
+**Agent uptime:** Steward N/7, Planner N/7, Watchdog N/7
+**Silent failures detected:** N (orphaned checkpoints, missing logs)
+**Human-action items pending:** N (oldest: X days)
 **Tasks completed (7d):** N
 **Build status trend:** 🔴 → 🟡 / 🟡 → ✅ / stable
 **Backlog size:** N tasks (N critical, N high, N medium, N low)

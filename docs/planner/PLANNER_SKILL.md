@@ -28,28 +28,52 @@ Key paths:
 
 ## Execution Flow — Run These Steps in Order
 
+### PHASE 0: Session Checkpoint (first thing — before any analysis)
+
+Write a checkpoint file to `docs/planner/sessions/.checkpoint` immediately:
+
+```markdown
+# Planner Checkpoint — YYYY-MM-DD
+status: started
+started_at: HH:MM
+task_selected: (none yet)
+build_before: (unknown)
+```
+
+**Why:** If the session crashes mid-work, the Watchdog agent (3 PM) can detect the orphaned checkpoint (started but no matching session log) and flag it. This makes silent failures visible.
+
+Update this file at key moments during the session:
+- After task selection: update `task_selected`
+- After build check: update `build_before`
+- After commit: add `committed: true`
+- At session end: delete the checkpoint (the session log replaces it)
+
 ### PHASE 1: Situational Awareness (5 min)
 
 1. Read `docs/planner/BACKLOG.md` — your primary task source.
 2. Run `git log --oneline -10` — what changed recently?
 3. Run `git diff HEAD~3 --stat` — which files were touched?
 4. Check today's steward report in `docs/steward/YYYY-MM-DD.md` if it exists — harvest its findings.
-5. Run a quick build check:
+5. Check `docs/ops/NEEDS_HUMAN.md` — if there are unresolved human-required items that block your top task, skip to the next unblocked task.
+6. Run a quick build check:
    - `cd frontend && npm run build 2>&1 | tail -5`
    - `npx tsc --noEmit 2>&1 | grep "error TS" | wc -l`
-6. **Update your understanding of reality**: what is actually broken right now?
+7. **Update your understanding of reality**: what is actually broken right now? Update the checkpoint with `build_before` status.
 
 ### PHASE 2: Backlog Re-Scoring & Task Selection (5 min)
 
 1. Re-read `docs/planner/BACKLOG.md` with fresh eyes from Phase 1.
 2. **Override rule**: If the build is broken (TypeScript errors / compilation failure), the top task is ALWAYS the one that fixes it — regardless of backlog order. A broken build blocks everything else.
    - **Tiebreaker when both frontend AND backend builds are broken**: Fix frontend first. Frontend errors cascade (block UI testing, screenshot verification, and user-facing validation), whereas isolated backend script errors can coexist with a running server. More errors = higher priority (71 >> 2).
-3. Pick the **top 1–2 tasks** to implement this session. Criteria:
+3. Pick tasks to implement this session using **smart batching**:
    - Start with the highest-score 🔴 Critical task if any exist.
    - If no Critical tasks, pick the highest-score 🟡 High task.
    - Only move to 🟢 Medium if all Critical and High tasks are done.
    - Never skip ahead to a lower-priority task just because it sounds interesting.
+   - **Batching rule:** After selecting your primary task, estimate its effort. If it's a small fix (under ~30 min — e.g., adding aria-labels, fixing a single component, updating config), batch 2–3 small tasks together in one session. Don't let easy wins sit in the backlog when you have capacity.
+   - **Skip-if-blocked rule:** If the top task requires something you cannot do (e.g., DB migration on Supabase, Yogesh's design decision, third-party API key), skip it and log it in `docs/ops/NEEDS_HUMAN.md` with what's needed. Pick the next unblocked task instead. Don't waste a session.
 4. For each selected task, write a brief implementation plan in your thinking before coding.
+5. Update the checkpoint file with `task_selected`.
 
 ### PHASE 3: Implementation (Main Work)
 
@@ -114,6 +138,28 @@ Examples: `fix(frontend): migrate pages to modular structure, resolving 71 TS er
 
 **Never commit if verification failed.**
 
+### PHASE 6.5: Escalation Check
+
+Before writing your session report, check: did you encounter anything that **requires human intervention**? Common examples:
+
+- A DB migration SQL that needs to be run in Supabase SQL Editor
+- A design decision not covered by `docs/designs/`
+- An API key, secret, or third-party account setup needed
+- A task that's been attempted 2+ sessions without completion (systemic blocker)
+- A dependency conflict that needs Yogesh's judgment call
+
+If yes, **append** to `docs/ops/NEEDS_HUMAN.md`:
+
+```markdown
+## 🚨 [YYYY-MM-DD] <Short description>
+**Blocking task:** H-XX / M-XX
+**What's needed:** <specific action Yogesh needs to take>
+**Impact if delayed:** <what can't progress until this is resolved>
+**Status:** ⏳ Waiting
+```
+
+This file is the handoff point between autonomous work and human decisions. The Watchdog will surface unresolved items.
+
 ### PHASE 7: Session Report
 
 **Session log is mandatory.** Save a session log to `docs/planner/sessions/YYYY-MM-DD.md`. If no session log exists, the Meta-Optimizer cannot learn from your run and the system degrades. Write it even if the session was partial or unsuccessful.
@@ -145,6 +191,28 @@ Save a session log to `docs/planner/sessions/YYYY-MM-DD.md`:
 
 ---
 
+### PHASE 8: Cleanup
+
+1. **Delete the checkpoint file** `docs/planner/sessions/.checkpoint` — its existence after a session means the session failed. The session log now serves as the record.
+2. If the session was unsuccessful (no tasks completed, build broken worse than before), still write the session log with what happened and why. A failed session with a log is recoverable; a failed session without one is invisible.
+
+---
+
+## Recovery Protocol (When Things Go Wrong)
+
+If you start a session and find evidence of a previous failed session:
+- A `.checkpoint` file exists in `docs/planner/sessions/` but there's no corresponding session log for that date
+- The build is broken with errors you didn't introduce
+- Uncommitted changes are in the working tree from a previous run
+
+**Recovery steps:**
+1. Run `git status` and `git stash` any uncommitted changes (with a descriptive message)
+2. Assess the build state
+3. Write a recovery note in your session log: "Recovered from incomplete session on YYYY-MM-DD"
+4. Fix the build first (override rule applies), then proceed with normal task selection
+
+---
+
 ## Important Constraints
 
 1. **Never commit broken code.** Verify first, always.
@@ -152,7 +220,7 @@ Save a session log to `docs/planner/sessions/YYYY-MM-DD.md`:
 3. **Never modify docs/vision/** files. These are the constitution — read them, don't edit them.
 4. **Never modify docs/designs/README.md** without Yogesh's explicit input.
 5. **DB migrations cannot be auto-applied.** Write the SQL, document it, explain how to run it.
-6. **Stay in scope.** Implement one task well rather than three tasks poorly.
+6. **Stay in scope.** Implement one task well rather than three tasks poorly. Exception: if the primary task is small (<30 min), batch 2–3 small tasks — but verify each one individually before moving to the next.
 7. **If a task would take more than 2–3 hours of real coding**, split it into sub-tasks in the backlog and implement the first sub-task only.
 8. **The build must be green when you leave.** If you started with a broken build, fix it first. If you accidentally broke something, fix it before committing.
 
