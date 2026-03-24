@@ -4,11 +4,7 @@ import { getMapTrees } from '../api/map'
 import MapCanvas from '../components/MapCanvas'
 import { ActionBadge } from '../components/ActionBadge'
 import Spinner from '../../../core/components/Spinner'
-
-const LEGEND = [
-  {key:'cut',color:'#ef4444'},{key:'trim',color:'#f59e0b'},{key:'keep',color:'#22c55e'},
-  {key:'monitor',color:'#3b82f6'},{key:'pending',color:'#9ca3af'},
-]
+import { LEGEND_ITEMS } from '../../../core/constants/actionColors'
 
 export default function MapView() {
   const nav = useNavigate()
@@ -24,7 +20,7 @@ export default function MapView() {
         <p className="text-xs text-gray-400">{trees.filter(t=>t.coord_x).length} trees plotted</p>
       </div>
       <div className="flex gap-3 px-4 py-2 bg-white border-b border-gray-100 overflow-x-auto">
-        {LEGEND.map(l => (
+        {LEGEND_ITEMS.map(l => (
           <div key={l.key} className="flex items-center gap-1 flex-shrink-0">
             <div className="w-2.5 h-2.5 rounded-full" style={{background:l.color}} />
             <span className="text-xs text-gray-500 capitalize">{l.key}</span>
@@ -45,7 +41,7 @@ export default function MapView() {
             </div>
             <div className="flex gap-2 mt-3">
               <button onClick={() => nav(`/trees/${selected.tree_code}`)} className="flex-1 bg-forest-600 text-white text-sm font-medium py-2 rounded-xl">View Tree</button>
-              <button onClick={() => setSelected(null)} className="w-10 h-9 border border-gray-200 rounded-xl text-gray-400 flex items-center justify-center">✕</button>
+              <button onClick={() => setSelected(null)} aria-label="Dismiss selection" className="w-11 h-11 border border-gray-200 rounded-xl text-gray-400 flex items-center justify-center">✕</button>
             </div>
           </div>
         )}

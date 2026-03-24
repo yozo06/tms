@@ -1,7 +1,7 @@
 # 🗂️ WildArc Autonomous Planner — Living Backlog
 
 > This file is maintained by the WildArc Autonomous Planner + Meta-Optimizer.
-> Last updated: 2026-03-23 by Yogesh + Claude — Full audit & sprint planning.
+> Last updated: 2026-03-24 by Planner — Completed H-01, H-02, H-03, H-05 accessibility + color constants batch.
 >
 > **Sprint plan:** See `docs/planner/SPRINT_PLAN.md` for phased timeline.
 
@@ -33,11 +33,11 @@ Priority scores are recalculated daily using: **Impact × Phase Alignment ÷ Eff
 
 | # | Task | Score | Sprint | Status | Notes |
 |---|------|-------|--------|--------|-------|
-| H-01 | **Add aria-labels to all icon-only buttons** | 78 | S1 | 🆕 New | Zero aria-labels in entire codebase. Audit all .tsx files, add labels. Batchable with H-02, H-03. ~2 hours. |
-| H-02 | **Add alt text to all img elements** | 75 | S1 | 🆕 New | Missing alt on TreeDetail photo, species images. Quick scan + fix. ~30 min. |
-| H-03 | **Fix tap targets (w-4 h-4 → w-5 h-5 min)** | 72 | S1 | 🆕 New | HealthLog checkboxes, icon buttons too small for field use. WCAG 2.5.5 requires 44px min. ~1 hour. |
+| H-01 | **Add aria-labels to all icon-only buttons** | 78 | S1 | ✅ Done | Added aria-labels to 13 icon-only buttons across SpeciesModal, ZoneModal, TreeDetail, TreeEdit, Dashboard, TreeList, ActivityLog, HealthLog, Employees, MapView. Also added role+aria-label to StatusDot and MapCanvas. |
+| H-02 | **Add alt text to all img elements** | 75 | S1 | ✅ Done | Added descriptive alt text to TreeDetail photo gallery images. Cover image already had alt. |
+| H-03 | **Fix tap targets (w-4 h-4 → w-5 h-5 min)** | 72 | S1 | ✅ Done | Increased icon button sizes from w-9 h-9 → w-11 h-11 (44px) on Dashboard, TreeList, ActivityLog, HealthLog, TreeEdit, MapView. Increased checkbox sizes from w-4 h-4 → w-5 h-5 in HealthLog. |
 | H-04 | **Centralize config values into config.ts** | 68 | S1 | 🆕 New | JWT expiry, pagination limits, upload size, API URLs hardcoded across files. Create `src/core/config.ts`. ~1-2 hours. |
-| H-05 | **Centralize color constants (actionColors.ts)** | 65 | S1 | 🆕 New | MapCanvas/MapView have hardcoded hex colors. Create `frontend/src/core/constants/actionColors.ts` with palette from design spec. ~1 hour. |
+| H-05 | **Centralize color constants (actionColors.ts)** | 65 | S1 | ✅ Done | Created `frontend/src/core/constants/actionColors.ts` with ACTION_COLORS, LEGEND_ITEMS, CANVAS_COLORS. Updated MapCanvas, MapPicker, MapView to import from centralized file. |
 | H-06 | **Fix rollup/vite build (ARM64 native module)** | 70 | S1 | 🆕 New | npm run build fails with @rollup/rollup-linux-arm64-gnu not found. Fix: `cd frontend && npm install`. ~15 min. |
 | H-07 | **GitHub Actions CI workflow (lint + typecheck + test)** | 82 | S2 | 🆕 New | No CI/CD. PRs can't be validated. Create `.github/workflows/ci.yml`: install → tsc --noEmit → vitest run → build. ⚠️ May need Yogesh to enable Actions on repo. |
 | H-08 | **Expand test coverage: auth API routes** | 76 | S2 | 🆕 New | Only 5 test files exist. Add tests for /api/auth/login, /signup, /refresh using Supertest. Target: all auth happy paths + error cases. ~3 hours. |
@@ -87,6 +87,10 @@ Priority scores are recalculated daily using: **Impact × Phase Alignment ÷ Eff
 |---|------|-----------|---------|
 | C-01 | Fix frontend build: migrate 14 page files + all components + all API modules to modular structure. Added activeProjectId/setActiveProject to auth store. Fixed 71 TS errors → 0. | 2026-03-23 | Planner 2026-03-23 |
 | C-02 | Fix backend: update dangling imports in set_owner_pass.ts (../lib → ../core/lib) | 2026-03-23 | Planner 2026-03-23 |
+| H-01 | Add aria-labels to all 13 icon-only buttons across entire frontend | 2026-03-24 | Planner 2026-03-24 |
+| H-02 | Add alt text to TreeDetail photo gallery images | 2026-03-24 | Planner 2026-03-24 |
+| H-03 | Fix tap targets — icon buttons to w-11 h-11 (44px), checkboxes to w-5 h-5 | 2026-03-24 | Planner 2026-03-24 |
+| H-05 | Centralize color constants into `core/constants/actionColors.ts`, update MapCanvas/MapPicker/MapView | 2026-03-24 | Planner 2026-03-24 |
 | — | OSS foundation files (CONTRIBUTING, LICENSE, CODE_OF_CONDUCT, templates) | 2026-03-xx | Manual |
 | — | Multi-tenant RBAC backend + project switcher | 2026-03-xx | Manual |
 | — | Testing framework setup (Vitest + Jest + Supertest) | 2026-03-xx | Manual |

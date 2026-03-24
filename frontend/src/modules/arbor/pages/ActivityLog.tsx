@@ -28,7 +28,7 @@ export default function ActivityLog() {
       <button onClick={() => nav(-1)} className="mb-4 flex items-center gap-1 text-gray-500"><ArrowLeft size={16} /> Back</button>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-gray-800">Activity — {code}</h1>
-        <button onClick={() => setShowForm(f=>!f)} className="w-9 h-9 bg-forest-600 rounded-xl flex items-center justify-center text-white"><Plus size={18} /></button>
+        <button onClick={() => setShowForm(f=>!f)} aria-label="Add activity" className="w-11 h-11 bg-forest-600 rounded-xl flex items-center justify-center text-white"><Plus size={18} /></button>
       </div>
       {showForm && (
         <div className="bg-white rounded-2xl p-4 shadow-sm mb-4 space-y-3">
