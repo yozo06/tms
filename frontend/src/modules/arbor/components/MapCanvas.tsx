@@ -1,12 +1,9 @@
 import { useEffect, useRef } from 'react'
+import { ACTION_COLORS, CANVAS_COLORS } from '../../../core/constants/actionColors'
 
 interface MapTree {
   id: number; tree_code: string; display_name?: string
   coord_x?: number; coord_y?: number; action: string; status: string
-}
-const ACTION_COLORS: Record<string, string> = {
-  cut:'#ef4444', trim:'#f59e0b', keep:'#22c55e',
-  monitor:'#3b82f6', treat:'#a855f7', pending:'#9ca3af', replant:'#f97316'
 }
 
 export default function MapCanvas({ trees, onSelect, selected }: {
@@ -32,7 +29,7 @@ export default function MapCanvas({ trees, onSelect, selected }: {
     const W = canvas.offsetWidth, H = canvas.offsetHeight
     canvas.width = W; canvas.height = H
     ctx.clearRect(0, 0, W, H)
-    ctx.strokeStyle = '#e5e7eb'; ctx.lineWidth = 0.5
+    ctx.strokeStyle = CANVAS_COLORS.gridStroke; ctx.lineWidth = 0.5
     for (let i = 0; i <= 10; i++) {
       const gx = 40 + (i/10)*(W-80); ctx.beginPath(); ctx.moveTo(gx,40); ctx.lineTo(gx,H-40); ctx.stroke()
       const gy = 40 + (i/10)*(H-80); ctx.beginPath(); ctx.moveTo(40,gy); ctx.lineTo(W-40,gy); ctx.stroke()
@@ -41,9 +38,9 @@ export default function MapCanvas({ trees, onSelect, selected }: {
       const [cx, cy] = toCanvas(tree.coord_x!, tree.coord_y!, W, H)
       const isSel = tree.id === selected
       ctx.beginPath(); ctx.arc(cx, cy, isSel ? 10 : 7, 0, Math.PI*2)
-      ctx.fillStyle = ACTION_COLORS[tree.action] || '#9ca3af'; ctx.fill()
-      if (isSel) { ctx.strokeStyle='#1e293b'; ctx.lineWidth=2; ctx.stroke() }
-      ctx.fillStyle='#1e293b'; ctx.font='9px sans-serif'; ctx.textAlign='center'
+      ctx.fillStyle = ACTION_COLORS[tree.action] || ACTION_COLORS.pending; ctx.fill()
+      if (isSel) { ctx.strokeStyle=CANVAS_COLORS.selectionStroke; ctx.lineWidth=2; ctx.stroke() }
+      ctx.fillStyle=CANVAS_COLORS.labelText; ctx.font='9px sans-serif'; ctx.textAlign='center'
       ctx.fillText(tree.tree_code, cx, cy+18)
     })
   }, [trees, selected])
@@ -57,5 +54,5 @@ export default function MapCanvas({ trees, onSelect, selected }: {
     if (hit) onSelect?.(hit)
   }
 
-  return <canvas ref={ref} className="w-full h-full cursor-pointer" onClick={handleClick} />
+  return <canvas ref={ref} role="img" aria-label="Map of tree locations on farm land" className="w-full h-full cursor-pointer" onClick={handleClick} />
 }

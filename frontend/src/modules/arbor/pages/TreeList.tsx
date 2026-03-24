@@ -44,8 +44,8 @@ export default function TreeList() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Trees</h1>
         <div className="flex gap-2">
-          <button onClick={() => setShowFilters(f => !f)}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-colors relative ${showFilters ? 'bg-forest-600 border-forest-600 text-white' : 'border-gray-200 text-gray-500'}`}>
+          <button onClick={() => setShowFilters(f => !f)} aria-label="Toggle filters"
+            className={`w-11 h-11 rounded-xl flex items-center justify-center border transition-colors relative ${showFilters ? 'bg-forest-600 border-forest-600 text-white' : 'border-gray-200 text-gray-500'}`}>
             <Filter size={16} />
             {activeFilterCount > 0 && !showFilters && (
               <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white rounded-full text-[9px] flex items-center justify-center font-bold">
@@ -53,7 +53,7 @@ export default function TreeList() {
               </span>
             )}
           </button>
-          {isOwner() && <button onClick={() => nav('/trees/new')} className="w-9 h-9 bg-forest-600 rounded-xl flex items-center justify-center text-white"><Plus size={18} /></button>}
+          {isOwner() && <button onClick={() => nav('/trees/new')} aria-label="Add new tree" className="w-11 h-11 bg-forest-600 rounded-xl flex items-center justify-center text-white"><Plus size={18} /></button>}
         </div>
       </div>
       <div className="relative mb-3">

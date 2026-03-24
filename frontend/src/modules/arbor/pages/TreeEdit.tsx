@@ -102,8 +102,8 @@ export default function TreeEdit() {
 
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Edit Tree <span className="font-mono text-forest-600">{code}</span></h1>
-                <button onClick={handleDelete}
-                    className="w-9 h-9 bg-red-50 border border-red-200 rounded-xl flex items-center justify-center text-red-500 active:scale-95 transition-transform">
+                <button onClick={handleDelete} aria-label="Delete tree"
+                    className="w-11 h-11 bg-red-50 border border-red-200 rounded-xl flex items-center justify-center text-red-500 active:scale-95 transition-transform">
                     <Trash2 size={16} />
                 </button>
             </div>
