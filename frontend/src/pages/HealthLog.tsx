@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getHealth, addHealth } from '../api/trees'
+import { getHealth, addHealth } from '../modules/arbor/api/trees'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Plus } from 'lucide-react'

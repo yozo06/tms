@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react'
-import { getTrees } from '../api/trees'
-import { useAuthStore } from '../store/auth.store'
-import TreeCard from '../components/TreeCard'
-import Spinner, { EmptyState } from '../components/Spinner'
+import { getTrees } from '../modules/arbor/api/trees'
+import { useAuthStore } from '../core/store/auth.store'
+import TreeCard from '../modules/arbor/components/TreeCard'
+import Spinner, { EmptyState } from '../core/components/Spinner'
 
 export default function FieldHome() {
   const { user } = useAuthStore()
   const [trees, setTrees] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   useEffect(() => {
-    getTrees({ limit: 50 }).then(r => setTrees(r.trees)).finally(() => setLoading(false))
+    getTrees({ limit: 50 }).then((r: any) => setTrees(r.trees)).finally(() => setLoading(false))
   }, [])
   if (loading) return <Spinner label="Loading your tasks…" />
   const pending = trees.filter(t => t.status==='pending')
