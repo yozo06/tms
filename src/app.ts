@@ -4,14 +4,12 @@ import cors from 'cors'
 import path from 'path'
 import authModuleRoutes from './modules/auth'
 import arborModuleRoutes from './modules/arbor'
+import { config } from './core/config'
 
 const app = express()
 
 // ── CORS — must be first, before logger ─────────────────────
-const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:5173',
-  process.env.APP_URL || 'http://localhost:3000',
-]
+const allowedOrigins = [config.cors.frontendUrl, config.cors.appUrl]
 
 app.use(cors({
   origin: (origin, cb) => {
@@ -20,7 +18,7 @@ app.use(cors({
     if (allowedOrigins.includes(origin)) return cb(null, true)
 
     // In production (unified deployment), automatically allow the hosting domain
-    if (process.env.NODE_ENV === 'production') return cb(null, true)
+    if (config.server.nodeEnv === 'production') return cb(null, true)
 
     console.warn(`🚫 CORS blocked: ${origin}`)
     cb(new Error(`CORS: origin ${origin} not allowed`))
