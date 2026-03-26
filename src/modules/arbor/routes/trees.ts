@@ -1,13 +1,14 @@
 import { Router } from 'express'
 import multer from 'multer'
-import { db } from '../lib/supabase'
-import { uploadToDrive } from '../lib/drive'
-import { authenticate, requireOwner } from '../middleware/authenticate'
-import { validate } from '../middleware/validate'
+import { db } from '../../../core/lib/supabase'
+import { uploadToDrive } from '../../../core/lib/drive'
+import { authenticate, requireOwner } from '../../../core/middleware/authenticate'
+import { validate } from '../../../core/middleware/validate'
 import { treeCreateSchema, treeUpdateSchema, treeActivitySchema, treeHealthSchema, treeContributorSchema } from '../schemas'
+import { config } from '../../../core/config'
 
 const r = Router()
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } })
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: config.uploads.maxFileSizeBytes } })
 
 // PUBLIC — no auth
 r.get('/:code/public', async (req, res) => {
@@ -59,7 +60,7 @@ r.get('/:code/public', async (req, res) => {
 r.use(authenticate)
 
 r.get('/', async (req, res) => {
-  const { zone, action, status, priority, assigned_to, search, page = '1', limit = '50' } = req.query
+  const { zone, action, status, priority, assigned_to, search, page = '1', limit = String(config.pagination.defaultLimit) } = req.query
   const offset = (parseInt(page as string) - 1) * parseInt(limit as string)
 
   let q = db.from('trees').select(`
@@ -150,7 +151,7 @@ r.get('/:code/activity', async (req, res) => {
   if (!tree) return res.status(404).json({ error: 'Tree not found' })
   const { data, error } = await db.from('tree_activity_log')
     .select('*, users:performed_by(name, role)')
-    .eq('tree_id', tree.id).order('logged_at', { ascending: false }).limit(100)
+    .eq('tree_id', tree.id).order('logged_at', { ascending: false }).limit(config.pagination.activityLogLimit)
   if (error) return res.status(500).json({ error: error.message })
   return res.json(data)
 })

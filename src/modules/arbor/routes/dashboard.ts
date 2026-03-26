@@ -1,6 +1,6 @@
 import { Router } from 'express'
-import { db } from '../lib/supabase'
-import { authenticate } from '../middleware/authenticate'
+import { db } from '../../../core/lib/supabase'
+import { authenticate } from '../../../core/middleware/authenticate'
 
 const r = Router()
 r.use(authenticate)

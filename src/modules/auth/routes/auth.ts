@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import { db } from '../lib/supabase'
-import { comparePassword, signToken, signRefreshToken, verifyToken, hashPassword } from '../lib/auth'
-import { authenticate } from '../middleware/authenticate'
+import { db } from '../../../core/lib/supabase'
+import { comparePassword, signToken, signRefreshToken, verifyToken, hashPassword } from '../../../core/lib/auth'
+import { authenticate } from '../../../core/middleware/authenticate'
 
 const r = Router()
 

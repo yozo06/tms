@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { getUsers, createUser, deactivateUser, updateUser } from '../api/users'
-import { useAuthStore } from '../store/auth.store'
+import { getUsers, createUser, deactivateUser, updateUser } from '../settings/api/users'
+import { useAuthStore } from '../core/store/auth.store'
 import toast from 'react-hot-toast'
 import { Plus, UserX, Edit2, Check, X, Shield, Pencil, Camera, Eye, UserPlus, RefreshCcw } from 'lucide-react'
-import Spinner from '../components/Spinner'
+import Spinner from '../core/components/Spinner'
 
 const ROLES = ['admin', 'editor', 'contributor', 'viewer']
 
