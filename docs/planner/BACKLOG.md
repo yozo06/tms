@@ -1,7 +1,7 @@
 # 🗂️ WildArc Autonomous Planner — Living Backlog
 
 > This file is maintained by the WildArc Autonomous Planner + Meta-Optimizer.
-> Last updated: 2026-03-26 by Planner — Completed H-04 centralize config.ts; marked H-07 CI workflow done (already existed).
+> Last updated: 2026-03-27 by Planner — Completed C-05 (migration SQL written), H-15 (legacy frontend untracked from git), H-11 (Docker Compose created); marked H-06 done (build fix was already committed in abfe3a0).
 >
 > **Sprint plan:** See `docs/planner/SPRINT_PLAN.md` for phased timeline.
 
@@ -25,7 +25,7 @@ Priority scores are recalculated daily using: **Impact × Phase Alignment ÷ Eff
 |---|------|-------|--------|--------|-------|
 | C-03 | **Add rate limiting middleware (express-rate-limit)** | 90 | S1 | 🆕 New | Zero rate limiting on any endpoint. Login brute-forceable. Install express-rate-limit, add to auth + API routes. ~1-2 hours. |
 | C-04 | **Add input sanitization middleware (express-validator / sanitize-html)** | 88 | S1 | 🆕 New | Zod validates shape only; no XSS protection on text fields. Add sanitization middleware to all POST/PATCH handlers. ~2 hours. |
-| C-05 | **Enforce project_id on trees/zones (NOT NULL + RLS)** | 85 | S3 | 🆕 New | project_id is nullable — multi-tenancy not enforced. Write migration SQL to backfill + set NOT NULL. ⚠️ Needs Yogesh to run migration in Supabase. |
+| C-05 | **Enforce project_id on trees/zones (NOT NULL + RLS)** | 85 | S3 | 🎯 In Progress | Migration SQL written: `docs/migrations/004_enforce_project_id.sql`. ⚠️ Needs Yogesh to run in Supabase SQL Editor. Application code side done; awaiting DB migration. |
 
 ---
 
@@ -38,16 +38,16 @@ Priority scores are recalculated daily using: **Impact × Phase Alignment ÷ Eff
 | H-03 | **Fix tap targets (w-4 h-4 → w-5 h-5 min)** | 72 | S1 | ✅ Done | Increased icon button sizes from w-9 h-9 → w-11 h-11 (44px) on Dashboard, TreeList, ActivityLog, HealthLog, TreeEdit, MapView. Increased checkbox sizes from w-4 h-4 → w-5 h-5 in HealthLog. |
 | H-04 | **Centralize config values into config.ts** | 68 | S1 | ✅ Done | Created `src/core/config.ts` with server.port, cors.frontendUrl/appUrl, auth.jwtExpiry/jwtRefreshExpiry/bcryptRounds, uploads.maxFileSizeBytes, pagination.defaultLimit/activityLogLimit. Updated auth.ts, server.ts, app.ts, trees.ts. |
 | H-05 | **Centralize color constants (actionColors.ts)** | 65 | S1 | ✅ Done | Created `frontend/src/core/constants/actionColors.ts` with ACTION_COLORS, LEGEND_ITEMS, CANVAS_COLORS. Updated MapCanvas, MapPicker, MapView to import from centralized file. |
-| H-06 | **Fix rollup/vite build (ARM64 native module)** | 70 | S1 | 🆕 New | npm run build fails with @rollup/rollup-linux-arm64-gnu not found. Fix: `cd frontend && npm install`. ~15 min. |
+| H-06 | **Fix rollup/vite build (ARM64 native module)** | 70 | S1 | ✅ Done | Fixed 2026-03-26 — added vite-tsconfig-paths@4.3.2 dev dep, reinstalled node_modules. Committed as abfe3a0. |
 | H-07 | **GitHub Actions CI workflow (lint + typecheck + test)** | 82 | S2 | ✅ Done | `.github/workflows/ci.yml` already exists (created in feat(ops) commit e643e77). Runs backend TS check + tests + frontend TS check + vitest + build on PRs to develop/main. |
 | H-08 | **Expand test coverage: auth API routes** | 76 | S2 | 🆕 New | Only 5 test files exist. Add tests for /api/auth/login, /signup, /refresh using Supertest. Target: all auth happy paths + error cases. ~3 hours. |
 | H-09 | **Expand test coverage: arbor API routes** | 74 | S2 | 🆕 New | Add tests for /api/arbor/trees CRUD, /species, /zones, /dashboard using Supertest. Target: happy paths + validation errors. ~4 hours (split if needed). |
 | H-10 | **Expand test coverage: critical UI components** | 70 | S2 | 🆕 New | Add React Testing Library tests for: TreeCard, TreeList (filter logic), Dashboard (stats rendering), Login form. ~3 hours. |
-| H-11 | **Docker Compose for local dev** | 65 | S2 | 🆕 New | No containerized dev setup. Create Dockerfile + docker-compose.yml (Node app + env config). Enables contributor onboarding. ~2 hours. |
+| H-11 | **Docker Compose for local dev** | 65 | S2 | ✅ Done | Created Dockerfile (production), Dockerfile.dev (dev targets), docker-compose.yml (api+frontend with hot-reload), .dockerignore. 2026-03-27. |
 | H-12 | **Seed data script for fresh deployments** | 72 | S3 | 🆕 New | Fresh clone starts empty — unusable for testing/demo. Create `scripts/seed.ts`: demo project, 20 trees (varied species/zones/health), sample activity + health logs. ~3 hours. |
 | H-13 | **API documentation (OpenAPI / Swagger)** | 68 | S3 | 🆕 New | No way for contributors to discover endpoints. Add swagger-jsdoc + swagger-ui-express. Document all routes with request/response schemas. ~4 hours (split if needed). |
 | H-14 | **Supabase RLS policies for multi-tenant isolation** | 80 | S3 | 🆕 New | No row-level security — any authenticated user can read all projects' data via service role. Write RLS policies for trees, zones, health_observations, activity_log. ⚠️ Migration needs Yogesh to run. |
-| H-15 | **Clean up legacy duplicate files in frontend** | 60 | S5 | 🆕 New | `frontend/src/api/`, `/components/`, `/pages/`, `/store/` still contain legacy copies alongside new `/core/` and `/modules/` structure. Delete legacy files, verify imports. ~2 hours. |
+| H-15 | **Clean up legacy duplicate files in frontend** | 60 | S5 | ✅ Done | Removed 35 tracked files from git index (frontend/src/api/, components/, pages/, store/). Added .gitignore rules for legacy dirs + backend ghost files (src/lib/, routes/, middleware/, schemas/). FUSE mount prevents physical rm — Yogesh can run: `rm -rf frontend/src/api/ frontend/src/components/ frontend/src/pages/ frontend/src/store/ src/lib/ src/routes/ src/middleware/ src/schemas/`. 2026-03-27. |
 
 ---
 
@@ -61,7 +61,7 @@ Priority scores are recalculated daily using: **Impact × Phase Alignment ÷ Eff
 | M-04 | **Photo timeline UI in TreeDetail** | 38 | S4 | 🆕 New | Horizontal scrollable timeline showing tree photos by date. Photos already stored via Google Drive. Pure frontend. ~2 hours. |
 | M-05 | **Data export (trees + health logs as CSV)** | 36 | S4 | 🆕 New | Backend: GET /api/arbor/trees/export?format=csv. Use `json2csv` or manual serialization. Frontend: download button on Dashboard. Researcher persona needs this. ~2 hours. |
 | M-06 | **Biodiversity index calculator (Shannon H')** | 30 | S5 | 🆕 New | Pure calculation from existing species data. `H' = -Σ(pi × ln(pi))`. Dashboard widget showing index + species diversity chart. ~2 hours. |
-| M-07 | **Carbon sequestration estimate per tree** | 28 | S5 | 🆕 New | Allometric formula (Chave et al. 2014) using species + age + DBH. Display on TreeDetail as "estimated CO₂ absorbed". ~2 hours. |
+| M-07 | **Carbon Profile tab: biomass + CO₂ estimate + monitoring report** | 52 | S4 | 🆕 New | **Pure frontend — no migration needed.** `trunk_diameter_cm`, `height_m`, `approx_age_yrs`, `planting_date` already on the Tree type. Implementation: (1) create `frontend/src/modules/arbor/utils/carbonCalc.ts` with ICFRE allometric equations; (2) add "Carbon" tab to TreeDetail showing AGB estimate, CO₂ absorbed, annual sequestration rate, carbon credit pre-qualification badge; (3) "Download Report" button generating a formatted text/CSV monitoring report (Verra VM0047 style). Species-specific wood density table for 12 common Coorg species (silver oak, coffee, pepper, areca, teak, eucalyptus, jackfruit, mango, neem, bamboo, coconut, cardamom). See design spec: `docs/designs/arbor-v2/carbon-profile.md`. ~3 hours. |
 | M-08 | **Expand test coverage: frontend modules** | 35 | S2 | 🆕 New | Add Vitest tests for Arbor pages: TreeList filtering, TreeDetail rendering, Dashboard stat calculations. Target: 30%+ frontend coverage. ~4 hours (split across sessions). |
 
 ---
@@ -92,7 +92,10 @@ Priority scores are recalculated daily using: **Impact × Phase Alignment ÷ Eff
 | H-03 | Fix tap targets — icon buttons to w-11 h-11 (44px), checkboxes to w-5 h-5 | 2026-03-24 | Planner 2026-03-24 |
 | H-05 | Centralize color constants into `core/constants/actionColors.ts`, update MapCanvas/MapPicker/MapView | 2026-03-24 | Planner 2026-03-24 |
 | H-04 | Centralize backend config into `src/core/config.ts`; updated auth.ts, server.ts, app.ts, trees.ts | 2026-03-26 | Planner 2026-03-26 |
+| H-06 | Fix rollup/vite ARM64 build — vite-tsconfig-paths@4.3.2 + npm install | 2026-03-26 | Planner 2026-03-26 |
 | H-07 | GitHub Actions CI workflow — already existed in `.github/workflows/ci.yml` (commit e643e77) | 2026-03-26 | Planner 2026-03-26 |
+| H-11 | Docker Compose: Dockerfile + Dockerfile.dev + docker-compose.yml + .dockerignore | 2026-03-27 | Planner 2026-03-27 |
+| H-15 | Remove 35 tracked legacy frontend files from git; .gitignore excludes legacy dirs | 2026-03-27 | Planner 2026-03-27 |
 | — | OSS foundation files (CONTRIBUTING, LICENSE, CODE_OF_CONDUCT, templates) | 2026-03-xx | Manual |
 | — | Multi-tenant RBAC backend + project switcher | 2026-03-xx | Manual |
 | — | Testing framework setup (Vitest + Jest + Supertest) | 2026-03-xx | Manual |
