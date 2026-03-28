@@ -1,7 +1,7 @@
 # 🗂️ WildArc Autonomous Planner — Living Backlog
 
 > This file is maintained by the WildArc Autonomous Planner + Meta-Optimizer.
-> Last updated: 2026-03-27 by Planner — Completed C-05 (migration SQL written), H-15 (legacy frontend untracked from git), H-11 (Docker Compose created); marked H-06 done (build fix was already committed in abfe3a0).
+> Last updated: 2026-03-28 by Planner — Completed M-07 (Carbon Profile tab in TreeDetail — carbonCalc.ts utility + CarbonProfile component + 8 unit tests). TS: 0 errors. Build still blocked by ARM64 rollup infra issue (Day 5).
 >
 > **Sprint plan:** See `docs/planner/SPRINT_PLAN.md` for phased timeline.
 
@@ -61,7 +61,7 @@ Priority scores are recalculated daily using: **Impact × Phase Alignment ÷ Eff
 | M-04 | **Photo timeline UI in TreeDetail** | 38 | S4 | 🆕 New | Horizontal scrollable timeline showing tree photos by date. Photos already stored via Google Drive. Pure frontend. ~2 hours. |
 | M-05 | **Data export (trees + health logs as CSV)** | 36 | S4 | 🆕 New | Backend: GET /api/arbor/trees/export?format=csv. Use `json2csv` or manual serialization. Frontend: download button on Dashboard. Researcher persona needs this. ~2 hours. |
 | M-06 | **Biodiversity index calculator (Shannon H')** | 30 | S5 | 🆕 New | Pure calculation from existing species data. `H' = -Σ(pi × ln(pi))`. Dashboard widget showing index + species diversity chart. ~2 hours. |
-| M-07 | **Carbon Profile tab: biomass + CO₂ estimate + monitoring report** | 52 | S4 | 🆕 New | **Pure frontend — no migration needed.** `trunk_diameter_cm`, `height_m`, `approx_age_yrs`, `planting_date` already on the Tree type. Implementation: (1) create `frontend/src/modules/arbor/utils/carbonCalc.ts` with ICFRE allometric equations; (2) add "Carbon" tab to TreeDetail showing AGB estimate, CO₂ absorbed, annual sequestration rate, carbon credit pre-qualification badge; (3) "Download Report" button generating a formatted text/CSV monitoring report (Verra VM0047 style). Species-specific wood density table for 12 common Coorg species (silver oak, coffee, pepper, areca, teak, eucalyptus, jackfruit, mango, neem, bamboo, coconut, cardamom). See design spec: `docs/designs/arbor-v2/carbon-profile.md`. ~3 hours. |
+| M-07 | **Carbon Profile tab: biomass + CO₂ estimate + monitoring report** | 52 | S4 | ✅ Done | Completed 2026-03-28. `carbonCalc.ts` created with Chave et al. 2014 AGB equation + 12 Coorg species wood densities. CarbonProfile component added to TreeDetail with confidence badges, stat grid, detail rows, download button. 8 Vitest unit tests in `carbonCalc.test.ts`. TS: 0 errors. |
 | M-08 | **Expand test coverage: frontend modules** | 35 | S2 | 🆕 New | Add Vitest tests for Arbor pages: TreeList filtering, TreeDetail rendering, Dashboard stat calculations. Target: 30%+ frontend coverage. ~4 hours (split across sessions). |
 
 ---
@@ -95,6 +95,7 @@ Priority scores are recalculated daily using: **Impact × Phase Alignment ÷ Eff
 | H-06 | Fix rollup/vite ARM64 build — vite-tsconfig-paths@4.3.2 + npm install | 2026-03-26 | Planner 2026-03-26 |
 | H-07 | GitHub Actions CI workflow — already existed in `.github/workflows/ci.yml` (commit e643e77) | 2026-03-26 | Planner 2026-03-26 |
 | H-11 | Docker Compose: Dockerfile + Dockerfile.dev + docker-compose.yml + .dockerignore | 2026-03-27 | Planner 2026-03-27 |
+| M-07 | Carbon Profile section in TreeDetail: carbonCalc.ts (Chave 2014 AGB, 12 Coorg species), CarbonProfile component, 8 unit tests | 2026-03-28 | Planner 2026-03-28 |
 | H-15 | Remove 35 tracked legacy frontend files from git; .gitignore excludes legacy dirs | 2026-03-27 | Planner 2026-03-27 |
 | — | OSS foundation files (CONTRIBUTING, LICENSE, CODE_OF_CONDUCT, templates) | 2026-03-xx | Manual |
 | — | Multi-tenant RBAC backend + project switcher | 2026-03-xx | Manual |

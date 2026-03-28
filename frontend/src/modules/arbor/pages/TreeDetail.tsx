@@ -5,9 +5,142 @@ import { useAuthStore } from '../../../core/store/auth.store'
 import { ActionBadge, PriorityBadge, StatusDot } from '../components/ActionBadge'
 import Spinner from '../../../core/components/Spinner'
 import toast from 'react-hot-toast'
-import { ArrowLeft, Camera, Activity, Edit2, CheckCircle2, MapPin, Calendar, Ruler } from 'lucide-react'
+import { ArrowLeft, Camera, Activity, Edit2, CheckCircle2, MapPin, Calendar, Ruler, Leaf, Download, AlertCircle } from 'lucide-react'
+import { estimateCarbon, formatCO2, generateMonitoringReport } from '../utils/carbonCalc'
 
 const STATUSES = ['pending', 'in_progress', 'completed', 'on_hold']
+
+// ─── Carbon Profile Component ────────────────────────────────────────────────
+
+interface CarbonProfileProps {
+  tree: {
+    tree_code: string
+    custom_common_name?: string | null
+    trunk_diameter_cm?: number | null
+    height_m?: number | null
+    approx_age_yrs?: number | null
+    planting_date?: string | null
+    coord_x?: number | null
+    coord_y?: number | null
+    land_zones?: { zone_name: string } | null
+    species?: { common_name: string; scientific_name: string } | null
+  }
+}
+
+function CarbonProfile({ tree }: CarbonProfileProps) {
+  const hasAnyData = tree.trunk_diameter_cm || tree.height_m || tree.approx_age_yrs || tree.planting_date
+
+  if (!hasAnyData) {
+    return (
+      <div className="bg-white rounded-[2rem] p-6 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-gray-100/30">
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="bg-forest-50 p-2.5 rounded-xl border border-forest-100/50">
+            <Leaf size={18} className="text-forest-500" />
+          </div>
+          <p className="text-[11px] font-display font-bold text-gray-400 uppercase tracking-widest">Carbon Profile</p>
+        </div>
+        <div className="flex items-start gap-3 bg-gray-50 rounded-2xl p-4 border border-gray-100">
+          <AlertCircle size={16} className="text-gray-400 mt-0.5 flex-shrink-0" />
+          <p className="text-[13px] text-gray-500 leading-relaxed">
+            Add height and trunk diameter in{' '}
+            <span className="font-semibold text-forest-600">Edit Tree</span>{' '}
+            to unlock carbon sequestration estimates for this tree.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  const estimate = estimateCarbon(tree)
+
+  const confidenceConfig = {
+    high: { color: 'text-forest-600', bg: 'bg-forest-50', border: 'border-forest-100', dot: 'bg-forest-500', label: 'HIGH' },
+    medium: { color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-100', dot: 'bg-amber-500', label: 'MEDIUM' },
+    low: { color: 'text-gray-500', bg: 'bg-gray-50', border: 'border-gray-200', dot: 'bg-gray-400', label: 'LOW' },
+  }[estimate.confidence]
+
+  const handleDownloadReport = () => {
+    const reportText = generateMonitoringReport(tree, estimate)
+    const date = new Date().toISOString().split('T')[0]
+    const blob = new Blob([reportText], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `wildarc-carbon-${tree.tree_code}-${date}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  return (
+    <div className="bg-white rounded-[2rem] p-6 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-gray-100/30">
+      {/* Header */}
+      <div className="flex items-center gap-2.5 mb-5">
+        <div className="bg-forest-50 p-2.5 rounded-xl border border-forest-100/50">
+          <Leaf size={18} className="text-forest-500" />
+        </div>
+        <p className="text-[11px] font-display font-bold text-gray-400 uppercase tracking-widest">Carbon Profile</p>
+      </div>
+
+      {/* Main Stats */}
+      <div className="grid grid-cols-2 gap-3 mb-5">
+        <div className="bg-forest-50/60 rounded-2xl p-4 border border-forest-100/40 text-center">
+          <p className="text-2xl font-display font-bold text-forest-700 leading-tight">
+            {formatCO2(estimate.co2eKg)}
+          </p>
+          <p className="text-[10px] font-bold text-forest-500/70 uppercase tracking-widest mt-1">Total absorbed</p>
+        </div>
+        <div className="bg-forest-50/60 rounded-2xl p-4 border border-forest-100/40 text-center">
+          <p className="text-2xl font-display font-bold text-forest-700 leading-tight">
+            ~{formatCO2(estimate.annualRateKg)}
+          </p>
+          <p className="text-[10px] font-bold text-forest-500/70 uppercase tracking-widest mt-1">Per year</p>
+        </div>
+      </div>
+
+      {/* Detail rows */}
+      <div className="space-y-2 mb-5">
+        <DetailRow label="Above-ground biomass" value={`${estimate.agbKg.toFixed(1)} kg (dry)`} />
+        <DetailRow label="Carbon stored" value={`${estimate.carbonKg.toFixed(1)} kg C`} />
+        <DetailRow label="CO₂ equivalent" value={`${estimate.co2eTonnes.toFixed(4)} tonnes`} />
+      </div>
+
+      {/* Confidence badge */}
+      <div className={`flex items-start gap-2.5 ${confidenceConfig.bg} rounded-2xl p-3.5 border ${confidenceConfig.border} mb-4`}>
+        <div className={`w-2 h-2 rounded-full ${confidenceConfig.dot} mt-1.5 flex-shrink-0`} />
+        <div>
+          <p className={`text-[11px] font-bold ${confidenceConfig.color} uppercase tracking-widest`}>
+            Data confidence: {confidenceConfig.label}
+          </p>
+          {estimate.missingFields.length > 0 && (
+            <ul className="mt-1.5 space-y-0.5">
+              {estimate.missingFields.map((f, i) => (
+                <li key={i} className="text-[11px] text-gray-500">⚠ {f}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {/* Download button */}
+      <button
+        onClick={handleDownloadReport}
+        className="w-full flex items-center justify-center gap-2 bg-forest-600 text-white py-3.5 rounded-2xl text-[13px] font-bold hover:bg-forest-700 active:scale-95 transition-all shadow-sm shadow-forest-200"
+      >
+        <Download size={15} />
+        Download Monitoring Report
+      </button>
+    </div>
+  )
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
+      <span className="text-[12px] text-gray-400 font-medium">{label}</span>
+      <span className="text-[13px] font-bold text-gray-700">{value}</span>
+    </div>
+  )
+}
 
 export default function TreeDetail() {
   const { code } = useParams()
@@ -61,11 +194,11 @@ export default function TreeDetail() {
 
         {/* Top Nav */}
         <div className="absolute top-0 w-full p-4 flex justify-between items-center z-10 pt-safe">
-          <button onClick={() => nav(-1)} className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-sm hover:bg-white/30 transition-colors">
+          <button onClick={() => nav(-1)} aria-label="Go back" className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-sm hover:bg-white/30 transition-colors">
             <ArrowLeft size={18} />
           </button>
           {isOwner() && (
-            <button onClick={() => nav(`/trees/${code}/edit`)} className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-sm hover:bg-white/30 transition-colors">
+            <button onClick={() => nav(`/trees/${code}/edit`)} aria-label="Edit tree" className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-sm hover:bg-white/30 transition-colors">
               <Edit2 size={16} />
             </button>
           )}
@@ -150,6 +283,9 @@ export default function TreeDetail() {
           </div>
         </div>
 
+        {/* Carbon Profile */}
+        <CarbonProfile tree={tree} />
+
         {/* Action Controls */}
         {!isVolunteer() && (
           <div className="bg-white rounded-[2rem] p-6 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-gray-100/30">
@@ -196,7 +332,7 @@ export default function TreeDetail() {
             <div className="grid grid-cols-2 gap-3">
               {photos.map(p => (
                 <div key={p.id} className="aspect-[4/5] rounded-[1.5rem] overflow-hidden shadow-sm border border-gray-100/50 bg-gray-100">
-                  <img src={p.url} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 ease-out cursor-pointer" />
+                  <img src={p.url} alt={`Photo of ${name} taken on ${p.created_at ? new Date(p.created_at).toLocaleDateString() : 'unknown date'}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 ease-out cursor-pointer" />
                 </div>
               ))}
             </div>
