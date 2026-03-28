@@ -55,3 +55,11 @@ src/schemas/
 
 # Agent artifacts
 .claude/
+
+# Bloom — browser automation & generated content
+.playwright-profile/       # Google login session — NEVER commit (contains auth cookies)
+content/bloom/generated/   # AI-generated output images — artifacts, not source
+
+# Stray generated HTML files (not part of any module)
+coorg-forest.html
+coorg.html

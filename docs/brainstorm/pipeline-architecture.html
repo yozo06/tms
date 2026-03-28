@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WildArc Content Pipeline — Architecture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Playfair+Display:wght@700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: #0a1a0a;
+    color: #e8e4dc;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .bg-pattern {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(47,97,53,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(121,188,224,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, rgba(216,164,25,0.06) 0%, transparent 50%);
+    z-index: 0;
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 1; }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    text-align: center;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #4CAF50, #79BCE0, #D8A419);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #8B9D8B;
+    font-size: 1rem;
+    margin-bottom: 48px;
+  }
+
+  /* Pipeline Flow */
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+
+  .pipeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, #2F6135, #D8A419, #79BCE0, #8B5E3C, #2F6135, #D8A419);
+    transform: translateX(-50%);
+    opacity: 0.4;
+    z-index: 0;
+  }
+
+  .layer {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 24px;
+  }
+
+  .layer-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .layer-number {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .layer-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .layer-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 16px 18px;
+    transition: all 0.3s ease;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+
+  .card-icon { font-size: 1.5rem; margin-bottom: 8px; }
+  .card-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; }
+  .card-desc { font-size: 0.82rem; color: #9a9a8a; line-height: 1.5; }
+  .card-phase {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-top: 8px;
+  }
+
+  /* Layer Colors */
+  .layer-trigger .layer-number { background: #2F6135; color: #fff; }
+  .layer-trigger .layer-title { color: #4CAF50; }
+  .layer-trigger .card::before { background: #2F6135; }
+
+  .layer-brain .layer-number { background: #8B5E3C; color: #fff; }
+  .layer-brain .layer-title { color: #C4956A; }
+  .layer-brain .card::before { background: #8B5E3C; }
+
+  .layer-gemini .layer-number { background: #D8A419; color: #333; }
+  .layer-gemini .layer-title { color: #D8A419; }
+  .layer-gemini .card::before { background: #D8A419; }
+
+  .layer-process .layer-number { background: #5A5A5A; color: #fff; }
+  .layer-process .layer-title { color: #9a9a9a; }
+  .layer-process .card::before { background: #5A5A5A; }
+
+  .layer-store .layer-number { background: #79BCE0; color: #333; }
+  .layer-store .layer-title { color: #79BCE0; }
+  .layer-store .card::before { background: #79BCE0; }
+
+  .layer-distribute .layer-number { background: #2F6135; color: #fff; }
+  .layer-distribute .layer-title { color: #4CAF50; }
+  .layer-distribute .card::before { background: #2F6135; }
+
+  .layer-feedback .layer-number { background: #8B5E3C; color: #fff; }
+  .layer-feedback .layer-title { color: #C4956A; }
+  .layer-feedback .card::before { background: #8B5E3C; }
+
+  .phase-1 { background: #2F6135; color: #fff; }
+  .phase-2 { background: #D8A419; color: #333; }
+  .phase-3 { background: #79BCE0; color: #333; }
+  .phase-4 { background: #8B5E3C; color: #fff; }
+
+  /* Arrow connector */
+  .arrow {
+    display: flex;
+    justify-content: center;
+    padding: 4px 0;
+    opacity: 0.4;
+    font-size: 1.2rem;
+    color: #4CAF50;
+  }
+
+  /* Phases Timeline */
+  .phases {
+    margin-top: 48px;
+    padding: 32px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+  }
+
+  .phases h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    text-align: center;
+    margin-bottom: 24px;
+    color: #D8A419;
+  }
+
+  .phase-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: start;
+  }
+
+  .phase-badge {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .phase-content h3 { font-size: 1rem; margin-bottom: 4px; }
+  .phase-content p { font-size: 0.85rem; color: #8B9D8B; line-height: 1.6; }
+
+  /* Tech Stack */
+  .tech-badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .tech-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #aaa;
+  }
+
+  .connector-line {
+    width: 2px; height: 20px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 auto;
+  }
+
+  @media (max-width: 768px) {
+    h1 { font-size: 1.6rem; }
+    .layer-cards { grid-template-columns: 1fr; }
+    .phase-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+<div class="container">
+
+  <h1>WildArc Content Pipeline</h1>
+  <p class="subtitle">Gemini Image Generation → Discord → Instagram</p>
+
+  <div class="pipeline">
+
+    <!-- Layer 1: Triggers -->
+    <div class="layer layer-trigger">
+      <div class="layer-header">
+        <div class="layer-number">1</div>
+        <div class="layer-title">TRIGGER LAYER</div>
+      </div>
+      <div class="layer-cards">
+        <div class="card">
+          <div class="card-icon">🖐️</div>
+          <div class="card-title">Manual CLI</div>
+          <div class="card-desc">Run script with topic + optional reference image. Quickest path to generation.</div>
+          <span class="card-phase phase-1">Phase 1</span>
+        </div>
+        <div class="card">
+          <div class="card-icon">💬</div>
+          <div class="card-title">Discord Command</div>
+          <div class="card-desc"><code>!generate topic</code> — community members can request content directly.</div>
+          <span class="card-phase phase-1">Phase 1</span>
+        </div>
+        <div class="card">
+          <div class="card-icon">📋</div>
+          <div class="card-title">Content Calendar</div>
+          <div class="card-desc">Supabase table with planned topics, scheduled dates, and themes.</div>
+          <span class="card-phase phase-2">Phase 2</span>
+        </div>
+        <div class="card">
+          <div class="card-icon">🤖</div>
+          <div class="card-title">Steward Feed</div>
+          <div class="card-desc">Daily Steward's problem journal auto-feeds topics to the pipeline.</div>
+          <span class="card-phase phase-3">Phase 3</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow">▼</div>
+
+    <!-- Layer 2: Content Brain -->
+    <div class="layer layer-brain">
+      <div class="layer-header">
+        <div class="layer-number">2</div>
+        <div class="layer-title">CONTENT BRAIN</div>
+      </div>
+      <div class="layer-cards">
+        <div class="card">
+          <div class="card-icon">📚</div>
+          <div class="card-title">Topic Database</div>
+          <div class="card-desc">Curated topics: bamboo, coffee, permaculture, Coorg ecology, natural building, sustainable living.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">✍️</div>
+          <div class="card-title">Prompt Templates</div>
+          <div class="card-desc">Structured prompts that maintain consistent WildArc style — infographic, step-by-step, comparison, species profile.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🖼️</div>
+          <div class="card-title">Reference Library</div>
+          <div class="card-desc">Curated style references (like the bamboo infographics) for visual consistency across all generated content.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow">▼</div>
+
+    <!-- Layer 3: Gemini -->
+    <div class="layer layer-gemini">
+      <div class="layer-header">
+        <div class="layer-number">3</div>
+        <div class="layer-title">GEMINI IMAGE GENERATION</div>
+      </div>
+      <div class="layer-cards">
+        <div class="card">
+          <div class="card-icon">✨</div>
+          <div class="card-title">Gemini 2.0 Flash</div>
+          <div class="card-desc">Free tier: 60 req/min, 1500/day. Native image generation with reference image input. Text rendering for infographics.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔄</div>
+          <div class="card-title">Retry & Quality Gate</div>
+          <div class="card-desc">Auto-retry on failure. Check dimensions, clarity, and text legibility. Re-generate with adjusted prompt if needed.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow">▼</div>
+
+    <!-- Layer 4: Processing -->
+    <div class="layer layer-process">
+      <div class="layer-header">
+        <div class="layer-number">4</div>
+        <div class="layer-title">POST-PROCESSING</div>
+      </div>
+      <div class="layer-cards">
+        <div class="card">
+          <div class="card-icon">📐</div>
+          <div class="card-title">Resize & Optimize</div>
+          <div class="card-desc">Discord (1024px), Instagram Feed (1080×1350), Story (1080×1920), Website (1920px). Sharp.js.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">💧</div>
+          <div class="card-title">Watermark</div>
+          <div class="card-desc">Subtle WildArc logo overlay. Protects content and builds brand recognition across platforms.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📝</div>
+          <div class="card-title">Caption & Hashtags</div>
+          <div class="card-desc">Claude generates platform-specific captions — casual for Discord, hashtag-optimized for Instagram.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow">▼</div>
+
+    <!-- Layer 5: Storage -->
+    <div class="layer layer-store">
+      <div class="layer-header">
+        <div class="layer-number">5</div>
+        <div class="layer-title">STORAGE</div>
+      </div>
+      <div class="layer-cards">
+        <div class="card">
+          <div class="card-icon">📁</div>
+          <div class="card-title">Local Filesystem</div>
+          <div class="card-desc">Working archive: <code>/content/images/YYYY-MM/</code>. Immediate access for all pipeline stages.</div>
+          <span class="card-phase phase-1">Phase 1</span>
+        </div>
+        <div class="card">
+          <div class="card-icon">☁️</div>
+          <div class="card-title">Google Drive</div>
+          <div class="card-desc">Existing integration! Team sharing + backup. Folder structure mirrors local.</div>
+          <span class="card-phase phase-1">Phase 1</span>
+        </div>
+        <div class="card">
+          <div class="card-icon">🗄️</div>
+          <div class="card-title">Supabase Storage</div>
+          <div class="card-desc">Public CDN URLs for Instagram API (requires public image URL). Website gallery backend.</div>
+          <span class="card-phase phase-2">Phase 2</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow">▼</div>
+
+    <!-- Layer 6: Distribution -->
+    <div class="layer layer-distribute">
+      <div class="layer-header">
+        <div class="layer-number">6</div>
+        <div class="layer-title">DISTRIBUTION</div>
+      </div>
+      <div class="layer-cards">
+        <div class="card">
+          <div class="card-icon">💬</div>
+          <div class="card-title">Discord Webhook</div>
+          <div class="card-desc">Zero infrastructure — just a webhook URL. Rich embeds with WildArc branding. Instant setup.</div>
+          <span class="card-phase phase-1">Phase 1</span>
+        </div>
+        <div class="card">
+          <div class="card-icon">📸</div>
+          <div class="card-title">Instagram Graph API</div>
+          <div class="card-desc">Business account required. Container-based publishing. Carousel support for multi-image posts.</div>
+          <span class="card-phase phase-3">Phase 3</span>
+        </div>
+        <div class="card">
+          <div class="card-icon">🌐</div>
+          <div class="card-title">WildArc Gallery</div>
+          <div class="card-desc">New /gallery route in the React app. Filterable by theme. Each image links to full educational content.</div>
+          <span class="card-phase phase-4">Phase 4</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow">▼</div>
+
+    <!-- Layer 7: Feedback -->
+    <div class="layer layer-feedback">
+      <div class="layer-header">
+        <div class="layer-number">7</div>
+        <div class="layer-title">FEEDBACK LOOP</div>
+      </div>
+      <div class="layer-cards">
+        <div class="card">
+          <div class="card-icon">🔥</div>
+          <div class="card-title">Discord Reactions</div>
+          <div class="card-desc">Community reacts with emojis. High-engagement topics get more variations. ✅ = approve for Instagram.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📊</div>
+          <div class="card-title">Performance Tracking</div>
+          <div class="card-desc">Supabase <code>content_performance</code> table. Likes, saves, shares, reach — informs future topic weighting.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🧠</div>
+          <div class="card-title">Meta-Optimizer</div>
+          <div class="card-desc">Weekly analysis by the existing Meta-Optimizer agent. Adjusts topic weights, improves prompt templates.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Implementation Phases -->
+  <div class="phases">
+    <h2>Implementation Roadmap</h2>
+
+    <div class="phase-row">
+      <div class="phase-badge phase-1">Phase 1<br>Week 1-2</div>
+      <div class="phase-content">
+        <h3>MVP: Manual CLI + Discord Webhook</h3>
+        <p>Get Gemini API key, create Discord webhook, build TypeScript scripts (generate.ts, discord.ts, cli.ts, templates.ts). Test with 10 topics. Refine prompts until quality matches the bamboo infographic standard. ~200 lines of code total.</p>
+      </div>
+    </div>
+
+    <div class="phase-row">
+      <div class="phase-badge phase-2">Phase 2<br>Week 3-4</div>
+      <div class="phase-content">
+        <h3>Automated + Content Calendar</h3>
+        <p>Supabase content_calendar table. Scheduled task (wildarc-content-creator, 12:30 PM daily). Google Drive upload integration. Watchdog health checks for pipeline. Bulk-seed 30 days of topics.</p>
+      </div>
+    </div>
+
+    <div class="phase-row">
+      <div class="phase-badge phase-3">Phase 3<br>Month 2</div>
+      <div class="phase-content">
+        <h3>Instagram + Feedback Loop</h3>
+        <p>Instagram Business Account + Meta API. Supabase Storage for public CDN URLs. Discord bot (upgrade from webhook) for reaction tracking. content_performance table for analytics.</p>
+      </div>
+    </div>
+
+    <div class="phase-row">
+      <div class="phase-badge phase-4">Phase 4<br>Month 3+</div>
+      <div class="phase-content">
+        <h3>Self-Improving Content Engine</h3>
+        <p>Steward auto-feeds topics. Performance-based weighting. A/B testing (2 versions → Discord → track winner). Seasonal awareness. Community request queue. Website gallery.</p>
+      </div>
+    </div>
+
+    <div class="tech-badges">
+      <span class="tech-badge">Gemini 2.0 Flash</span>
+      <span class="tech-badge">TypeScript</span>
+      <span class="tech-badge">Discord Webhooks</span>
+      <span class="tech-badge">Sharp.js</span>
+      <span class="tech-badge">Supabase</span>
+      <span class="tech-badge">Google Drive API</span>
+      <span class="tech-badge">Instagram Graph API</span>
+      <span class="tech-badge">Node.js</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
