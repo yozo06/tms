@@ -63,3 +63,7 @@ content/bloom/generated/   # AI-generated output images — artifacts, not sourc
 # Stray generated HTML files (not part of any module)
 coorg-forest.html
 coorg.html
+
+# Planner transient state
+docs/planner/sessions/.checkpoint
+docs/planner/sessions/.checkpoint.done
