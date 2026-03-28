@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WildArc Immersive Rainforest – Three.js PoC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow: hidden;
+        }
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 100vh;
+        }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.6;
+            max-width: 300px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        #ui h2 {
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #4ade80;
+        }
+        .control-group {
+            margin-bottom: 15px;
+        }
+        .control-label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #999;
+        }
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+        .info-text {
+            color: #aaa;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+        #stats {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #888;
+            font-family: 'Monaco', monospace;
+        }
+        #credits {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #666;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div id="ui">
+        <h2>Coorg Rainforest</h2>
+        
+        <div class="control-group">
+            <label class="control-label">Time of Day</label>
+            <input type="range" id="timeSlider" min="0" max="24" step="0.1" value="12">
+            <div style="margin-top: 5px; font-size: 12px;">
+                <span id="timeDisplay">12:00</span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">God Rays Intensity</label>
+            <input type="range" id="godraysSlider" min="0" max="2" step="0.1" value="1">
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">Mist Density</label>
+            <input type="range" id="mistSlider" min="0" max="1" step="0.05" value="0.4">
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">Camera Parallax</label>
+            <input type="range" id="parallaxSlider" min="0" max="1" step="0.05" value="0.5">
+        </div>
+
+        <div class="info-text">
+            Move your mouse to explore.<br>
+            You are standing in a food forest 1200m elevation, surrounded by multi-story vegetation.
+        </div>
+    </div>
+
+    <div id="stats"></div>
+    <div id="credits">Three.js PoC<br>Procedural Rainforest</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+        const canvas = document.getElementById('canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+
+        // Camera positioned at forest floor level, looking forward
+        camera.position.set(0, 0.2, 0);
+        camera.rotation.order = 'YXZ';
+
+        // ============================================================================
+        // SCENE SETUP: Lighting & Atmosphere
+        // ============================================================================
+        
+        // Time-of-day state
+        const timeState = {
+            hour: 12,
+            godraysIntensity: 1,
+            mistDensity: 0.4,
+            parallaxAmount: 0.5
+        };
+
+        // Ambient light (will be controlled by time of day)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        // Directional light for sun (simulates sun rays)
+        const sunLight = new THREE.DirectionalLight(0xffffff, 1);
+        sunLight.position.set(5, 8, 5);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        scene.add(sunLight);
+
+        // Fog for mist effect
+        const fog = new THREE.Fog(0x4a7c5e, 5, 30);
+        scene.fog = fog;
+
+        // Sky/background gradient
+        const skyColor = new THREE.Color(0x87ceeb);
+        scene.background = skyColor;
+
+        // ============================================================================
+        // PROCEDURAL VEGETATION LAYERS
+        // ============================================================================
+
+        function createForestLayer() {
+            const layerGroup = new THREE.Group();
+
+            // Layer 1: Ground flowers & small plants (0.05-0.2m height)
+            const flowerGeometry = new THREE.ConeGeometry(0.08, 0.15, 4);
+            const flowerMaterial = new THREE.MeshStandardMaterial({
+                color: 0xd946ef,
+                emissive: 0x8b008b,
+                emissiveIntensity: 0.3,
+                metalness: 0,
+                roughness: 0.8
+            });
+            
+            for (let i = 0; i < 120; i++) {
+                const flower = new THREE.Mesh(flowerGeometry, flowerMaterial.clone());
+                flower.position.set(
+                    (Math.random() - 0.5) * 40,
+                    0.08,
+                    (Math.random() - 0.5) * 40 - 5
+                );
+                flower.scale.set(
+                    0.4 + Math.random() * 0.6,
+                    0.5 + Math.random() * 0.7,
+                    0.4 + Math.random() * 0.6
+                );
+                flower.castShadow = true;
+                flower.receiveShadow = true;
+                layerGroup.add(flower);
+            }
+
+            // Layer 2: Berry bushes & small shrubs (0.5-1.5m height)
+            const bushGeometry = new THREE.SphereGeometry(0.6, 8, 8);
+            const bushMaterial = new THREE.MeshStandardMaterial({
+                color: 0x22c55e,
+                emissive: 0x15803d,
+                emissiveIntensity: 0.2,
+                metalness: 0.1,
+                roughness: 0.7
+            });
+            
+            for (let i = 0; i < 80; i++) {
+                const bush = new THREE.Mesh(bushGeometry, bushMaterial.clone());
+                bush.position.set(
+                    (Math.random() - 0.5) * 35,
+                    0.7 + Math.random() * 0.8,
+                    (Math.random() - 0.5) * 35 - 5
+                );
+                bush.scale.set(
+                    0.8 + Math.random() * 0.6,
+                    0.9 + Math.random() * 0.5,
+                    0.8 + Math.random() * 0.6
+                );
+                bush.castShadow = true;
+                bush.receiveShadow = true;
+                layerGroup.add(bush);
+            }
+
+            // Layer 3: Coffee/Cardamom plants (1-2.5m height)
+            const coffeeGeometry = new THREE.ConeGeometry(0.4, 1.5, 6);
+            const coffeeMaterial = new THREE.MeshStandardMaterial({
+                color: 0x4ade80,
+                emissive: 0x22c55e,
+                emissiveIntensity: 0.15,
+                metalness: 0,
+                roughness: 0.8
+            });
+            
+            for (let i = 0; i < 60; i++) {
+                const coffee = new THREE.Mesh(coffeeGeometry, coffeeMaterial.clone());
+                coffee.position.set(
+                    (Math.random() - 0.5) * 30,
+                    1.2,
+                    (Math.random() - 0.5) * 30 - 5
+                );
+                coffee.scale.set(
+                    0.9 + Math.random() * 0.4,
+                    1 + Math.random() * 0.6,
+                    0.9 + Math.random() * 0.4
+                );
+                coffee.rotation.z = (Math.random() - 0.5) * 0.3;
+                coffee.castShadow = true;
+                coffee.receiveShadow = true;
+                layerGroup.add(coffee);
+            }
+
+            // Layer 4: Banana & larger canopy understory (2-5m height)
+            const bananaTrunkGeometry = new THREE.CylinderGeometry(0.25, 0.3, 3, 6);
+            const bananaMaterial = new THREE.MeshStandardMaterial({
+                color: 0x8b7355,
+                metalness: 0.1,
+                roughness: 0.9
+            });
+            
+            const bananaCanopyGeometry = new THREE.SphereGeometry(1.2, 8, 8);
+            const bananaCanopyMaterial = new THREE.MeshStandardMaterial({
+                color: 0x65a30d,
+                emissive: 0x4ade80,
+                emissiveIntensity: 0.1,
+                metalness: 0.05,
+                roughness: 0.75
+            });
+
+            for (let i = 0; i < 40; i++) {
+                const trunkY = 1.5;
+                const trunk = new THREE.Mesh(bananaTrunkGeometry, bananaMaterial.clone());
+                trunk.position.set(
+                    (Math.random() - 0.5) * 25,
+                    trunkY,
+                    (Math.random() - 0.5) * 25 - 5
+                );
+                trunk.castShadow = true;
+                trunk.receiveShadow = true;
+                layerGroup.add(trunk);
+
+                const canopy = new THREE.Mesh(bananaCanopyGeometry, bananaCanopyMaterial.clone());
+                canopy.position.set(trunk.position.x, trunkY + 2.2, trunk.position.z);
+                canopy.scale.set(0.9 + Math.random() * 0.4, 0.95 + Math.random() * 0.3, 0.9 + Math.random() * 0.4);
+                canopy.castShadow = true;
+                canopy.receiveShadow = true;
+                layerGroup.add(canopy);
+            }
+
+            // Layer 5: Bamboo & mid-canopy (5-10m height)
+            const bambooGeometry = new THREE.CylinderGeometry(0.15, 0.15, 5, 5);
+            const bambooMaterial = new THREE.MeshStandardMaterial({
+                color: 0x84cc16,
+                emissive: 0x65a30d,
+                emissiveIntensity: 0.1,
+                metalness: 0.2,
+                roughness: 0.6
+            });
+            
+            for (let i = 0; i < 50; i++) {
+                const bamboo = new THREE.Mesh(bambooGeometry, bambooMaterial.clone());
+                bamboo.position.set(
+                    (Math.random() - 0.5) * 30,
+                    3.5 + Math.random() * 1,
+                    (Math.random() - 0.5) * 30 - 5
+                );
+                bamboo.rotation.z = (Math.random() - 0.5) * 0.2;
+                bamboo.castShadow = true;
+                bamboo.receiveShadow = true;
+                layerGroup.add(bamboo);
+            }
+
+            // Layer 6: Upper canopy trees (8-15m height)
+            const treeGeometry = new THREE.ConeGeometry(2, 8, 8);
+            const treeMaterial = new THREE.MeshStandardMaterial({
+                color: 0x15803d,
+                emissive: 0x22c55e,
+                emissiveIntensity: 0.08,
+                metalness: 0,
+                roughness: 0.8
+            });
+            
+            for (let i = 0; i < 25; i++) {
+                const tree = new THREE.Mesh(treeGeometry, treeMaterial.clone());
+                tree.position.set(
+                    (Math.random() - 0.5) * 35,
+                    6,
+                    (Math.random() - 0.5) * 35 - 5
+                );
+                tree.scale.set(
+                    0.7 + Math.random() * 0.5,
+                    0.8 + Math.random() * 0.6,
+                    0.7 + Math.random() * 0.5
+                );
+                tree.castShadow = true;
+                tree.receiveShadow = true;
+                layerGroup.add(tree);
+            }
+
+            // Layer 7: Emergent giants (12-20m height)
+            const giantGeometry = new THREE.ConeGeometry(3, 12, 8);
+            const giantMaterial = new THREE.MeshStandardMaterial({
+                color: 0x166534,
+                emissive: 0x15803d,
+                emissiveIntensity: 0.05,
+                metalness: 0.05,
+                roughness: 0.85
+            });
+            
+            for (let i = 0; i < 12; i++) {
+                const giant = new THREE.Mesh(giantGeometry, giantMaterial.clone());
+                giant.position.set(
+                    (Math.random() - 0.5) * 40,
+                    8,
+                    (Math.random() - 0.5) * 40 - 5
+                );
+                giant.scale.set(
+                    0.6 + Math.random() * 0.4,
+                    0.7 + Math.random() * 0.5,
+                    0.6 + Math.random() * 0.4
+                );
+                giant.castShadow = true;
+                giant.receiveShadow = true;
+                layerGroup.add(giant);
+            }
+
+            return layerGroup;
+        }
+
+        const forest = createForestLayer();
+        scene.add(forest);
+
+        // ============================================================================
+        // GOD RAYS / VOLUMETRIC LIGHT
+        // ============================================================================
+
+        function createGodRays() {
+            const rayGroup = new THREE.Group();
+            
+            for (let i = 0; i < 6; i++) {
+                const rayGeometry = new THREE.PlaneGeometry(3, 25);
+                const rayMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xffd700,
+                    transparent: true,
+                    opacity: 0.15,
+                    side: THREE.DoubleSide,
+                    blending: THREE.AdditiveBlending
+                });
+                
+                const ray = new THREE.Mesh(rayGeometry, rayMaterial);
+                ray.position.set(
+                    (Math.random() - 0.5) * 15,
+                    5,
+                    (Math.random() - 0.5) * 20 - 8
+                );
+                ray.rotation.x = Math.PI * 0.25;
+                ray.rotation.y = (i / 6) * Math.PI * 2;
+                
+                rayGroup.add(ray);
+            }
+            
+            return rayGroup;
+        }
+
+        const godRays = createGodRays();
+        scene.add(godRays);
+
+        // ============================================================================
+        // MIST PARTICLES (Volumetric effect)
+        // ============================================================================
+
+        function createMistParticles() {
+            const mistGroup = new THREE.Group();
+            
+            const mistGeometry = new THREE.BufferGeometry();
+            const mistCount = 500;
+            const positions = new Float32Array(mistCount * 3);
+            
+            for (let i = 0; i < mistCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 50;      // x
+                positions[i * 3 + 1] = Math.random() * 8;           // y
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 50 - 10; // z
+            }
+            
+            mistGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            
+            const mistMaterial = new THREE.PointsMaterial({
+                color: 0xc0e8d0,
+                size: 0.3,
+                transparent: true,
+                opacity: 0.3,
+                sizeAttenuation: true
+            });
+            
+            const mistParticles = new THREE.Points(mistGeometry, mistMaterial);
+            mistGroup.add(mistParticles);
+            
+            return mistGroup;
+        }
+
+        const mistParticles = createMistParticles();
+        scene.add(mistParticles);
+
+        // ============================================================================
+        // BACKGROUND ELEMENTS (visible through gaps in canopy)
+        // ============================================================================
+
+        function createBackground() {
+            const bgGroup = new THREE.Group();
+            
+            // Distant hills
+            const hillGeometry = new THREE.ConeGeometry(20, 15, 32);
+            const hillMaterial = new THREE.MeshStandardMaterial({
+                color: 0x5a7c6a,
+                emissive: 0x3d5a50,
+                emissiveIntensity: 0.05,
+                metalness: 0.05,
+                roughness: 0.95
+            });
+            
+            const hill1 = new THREE.Mesh(hillGeometry, hillMaterial);
+            hill1.position.set(-25, 5, -50);
+            hill1.scale.set(0.8, 1.2, 0.8);
+            bgGroup.add(hill1);
+            
+            const hill2 = new THREE.Mesh(hillGeometry, hillMaterial.clone());
+            hill2.position.set(20, 3, -55);
+            hill2.scale.set(0.9, 1.3, 0.9);
+            bgGroup.add(hill2);
+            
+            // Stream in valley (procedural)
+            const streamGeometry = new THREE.PlaneGeometry(4, 30);
+            const streamMaterial = new THREE.MeshStandardMaterial({
+                color: 0x2d5a7b,
+                emissive: 0x1e3a52,
+                emissiveIntensity: 0.08,
+                metalness: 0.3,
+                roughness: 0.4
+            });
+            
+            const stream = new THREE.Mesh(streamGeometry, streamMaterial);
+            stream.position.set(0, 0.5, -40);
+            stream.rotation.x = -Math.PI * 0.35;
+            bgGroup.add(stream);
+            
+            return bgGroup;
+        }
+
+        const background = createBackground();
+        scene.add(background);
+
+        // ============================================================================
+        // GROUND PLANE
+        // ============================================================================
+
+        const groundGeometry = new THREE.PlaneGeometry(100, 100);
+        const groundMaterial = new THREE.MeshStandardMaterial({
+            color: 0x3d5a4f,
+            emissive: 0x2a3f38,
+            emissiveIntensity: 0.05,
+            metalness: 0.05,
+            roughness: 0.95
+        });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -0.01;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // ============================================================================
+        // CONTROLS & INTERACTION
+        // ============================================================================
+
+        const mouse = { x: 0, y: 0 };
+        let cameraOffsetX = 0;
+        let cameraOffsetY = 0;
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        // UI Controls
+        const timeSlider = document.getElementById('timeSlider');
+        const godraysSlider = document.getElementById('godraysSlider');
+        const mistSlider = document.getElementById('mistSlider');
+        const parallaxSlider = document.getElementById('parallaxSlider');
+        const timeDisplay = document.getElementById('timeDisplay');
+
+        timeSlider.addEventListener('input', (e) => {
+            timeState.hour = parseFloat(e.target.value);
+            updateTimeOfDay();
+            updateTimeDisplay();
+        });
+
+        godraysSlider.addEventListener('input', (e) => {
+            timeState.godraysIntensity = parseFloat(e.target.value);
+            updateGodrays();
+        });
+
+        mistSlider.addEventListener('input', (e) => {
+            timeState.mistDensity = parseFloat(e.target.value);
+            updateMist();
+        });
+
+        parallaxSlider.addEventListener('input', (e) => {
+            timeState.parallaxAmount = parseFloat(e.target.value);
+        });
+
+        function updateTimeDisplay() {
+            const hours = Math.floor(timeState.hour);
+            const minutes = Math.round((timeState.hour % 1) * 60);
+            timeDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        }
+
+        function updateTimeOfDay() {
+            // Map hour (0-24) to colors and lighting
+            let sunIntensity = 0;
+            let ambientIntensity = 0.3;
+            let skyCol = new THREE.Color(0x1a1a2e);
+            
+            if (timeState.hour >= 6 && timeState.hour < 18) {
+                // Daytime
+                const dayProgress = (timeState.hour - 6) / 12;
+                sunIntensity = Math.sin(dayProgress * Math.PI) * 1.5;
+                ambientIntensity = 0.4 + Math.sin(dayProgress * Math.PI) * 0.5;
+                
+                if (dayProgress < 0.5) {
+                    // Morning: warmer light
+                    skyCol = new THREE.Color(0xffb347).lerp(new THREE.Color(0x87ceeb), dayProgress * 2);
+                } else {
+                    // Afternoon: bright sky
+                    skyCol = new THREE.Color(0x87ceeb);
+                }
+            } else {
+                // Night
+                skyCol = new THREE.Color(0x0d1b2a);
+                ambientIntensity = 0.15;
+                sunIntensity = 0.2;
+            }
+            
+            sunLight.intensity = sunIntensity;
+            ambientLight.intensity = ambientIntensity;
+            scene.background = skyCol;
+        }
+
+        function updateGodrays() {
+            godRays.children.forEach(ray => {
+                ray.material.opacity = 0.15 * timeState.godraysIntensity;
+            });
+        }
+
+        function updateMist() {
+            const mistPoints = mistParticles.children[0];
+            mistPoints.material.opacity = 0.3 * timeState.mistDensity;
+            fog.far = 30 - timeState.mistDensity * 10;
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+
+        // ============================================================================
+        // ANIMATION LOOP
+        // ============================================================================
+
+        const stats = document.getElementById('stats');
+        let frameCount = 0;
+        let lastTime = performance.now();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Parallax camera movement based on mouse
+            const targetOffsetX = mouse.x * timeState.parallaxAmount * 0.5;
+            const targetOffsetY = mouse.y * timeState.parallaxAmount * 0.3;
+            
+            cameraOffsetX += (targetOffsetX - cameraOffsetX) * 0.1;
+            cameraOffsetY += (targetOffsetY - cameraOffsetY) * 0.1;
+            
+            camera.position.x = cameraOffsetX;
+            camera.position.y = 0.2 + cameraOffsetY;
+
+            // Subtle mist animation (float)
+            if (mistParticles.children[0]) {
+                const positions = mistParticles.children[0].geometry.attributes.position.array;
+                for (let i = 0; i < positions.length; i += 3) {
+                    positions[i + 1] += Math.sin(Date.now() * 0.0001 + i) * 0.001;
+                }
+                mistParticles.children[0].geometry.attributes.position.needsUpdate = true;
+            }
+
+            // Animate god rays rotation
+            godRays.rotation.y += 0.0002;
+
+            // Forest subtle sway
+            forest.rotation.z = Math.sin(Date.now() * 0.0002) * 0.005;
+
+            // Render
+            renderer.render(scene, camera);
+
+            // Update stats
+            frameCount++;
+            const now = performance.now();
+            if (now - lastTime > 500) {
+                const fps = Math.round((frameCount * 1000) / (now - lastTime));
+                stats.textContent = `FPS: ${fps} | Parallax: ${(timeState.parallaxAmount * 100).toFixed(0)}% | ${timeState.hour.toFixed(1)}h`;
+                frameCount = 0;
+                lastTime = now;
+            }
+        }
+
+        // Initialize
+        updateTimeOfDay();
+        updateTimeDisplay();
+        updateGodrays();
+        updateMist();
+        animate();
+    </script>
+</body>
+</html>

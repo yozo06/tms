@@ -1,0 +1,70 @@
+%%{init: {'theme': 'forest', 'themeVariables': {'primaryColor': '#2F6135', 'primaryTextColor': '#fff', 'primaryBorderColor': '#1a3d1f', 'lineColor': '#8B5E3C', 'secondaryColor': '#D8A419', 'tertiaryColor': '#79BCE0'}}}%%
+
+flowchart TB
+    subgraph TRIGGER["🎯 TRIGGER LAYER"]
+        direction LR
+        T1["⏰ Scheduled\n(Daily/Weekly)"]
+        T2["💬 Discord Command\n(!generate topic)"]
+        T3["📋 Content Calendar\n(Supabase table)"]
+        T4["🖐️ Manual\n(CLI / Cowork)"]
+    end
+
+    subgraph BRAIN["🧠 CONTENT BRAIN (Claude/Script)"]
+        direction TB
+        B1["Topic Selection\n& Research"]
+        B2["Prompt Engineering\n(template + context)"]
+        B3["Reference Image\nSelection (optional)"]
+        B1 --> B2 --> B3
+    end
+
+    subgraph GEMINI["✨ GEMINI IMAGE GENERATION"]
+        direction TB
+        G1["Gemini 2.0 Flash\nExperimental API"]
+        G2["Image Generation\nwith Reference"]
+        G3["Quality Check\n& Retry Logic"]
+        G1 --> G2 --> G3
+    end
+
+    subgraph PROCESS["⚙️ POST-PROCESSING"]
+        direction LR
+        P1["Resize/Optimize\n(Sharp.js)"]
+        P2["Add WildArc\nWatermark"]
+        P3["Generate Caption\n& Hashtags"]
+    end
+
+    subgraph STORE["💾 STORAGE"]
+        direction LR
+        S1["Local Filesystem\n(/content/images)"]
+        S2["Google Drive\n(existing integration)"]
+        S3["Supabase Storage\n(future CDN)"]
+    end
+
+    subgraph DISTRIBUTE["📢 DISTRIBUTION"]
+        direction TB
+        D1["Discord Webhook\n(immediate)"]
+        D2["Instagram Graph API\n(future - needs\nBusiness Account)"]
+        D3["WildArc Website\n(future - gallery)"]
+    end
+
+    subgraph FEEDBACK["📊 FEEDBACK LOOP"]
+        direction LR
+        F1["Discord Reactions\n& Comments"]
+        F2["Instagram\nEngagement"]
+        F3["Content Performance\nDB (Supabase)"]
+    end
+
+    TRIGGER --> BRAIN
+    BRAIN --> GEMINI
+    GEMINI --> PROCESS
+    PROCESS --> STORE
+    STORE --> DISTRIBUTE
+    DISTRIBUTE --> FEEDBACK
+    FEEDBACK -.->|"Inform future\ncontent"| BRAIN
+
+    style TRIGGER fill:#2F6135,color:#fff
+    style BRAIN fill:#8B5E3C,color:#fff
+    style GEMINI fill:#D8A419,color:#333
+    style PROCESS fill:#5A5A5A,color:#fff
+    style STORE fill:#79BCE0,color:#333
+    style DISTRIBUTE fill:#2F6135,color:#fff
+    style FEEDBACK fill:#8B5E3C,color:#fff

@@ -1,0 +1,45 @@
+# ===========================================================================
+# WildArc — Docker build context exclusions
+# ===========================================================================
+
+# Dependencies — reinstalled inside container
+node_modules/
+frontend/node_modules/
+
+# Build outputs
+dist/
+frontend/dist/
+*.js.map
+
+# Environment — NEVER copy secrets into Docker images
+.env
+.env.local
+.env.production
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Testing artifacts
+coverage/
+.nyc_output/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project docs (not needed in runtime image)
+docs/
+wildarc-website/
+*.md
+
+# Scheduled tasks config
+Scheduled/
+
+# Claude agent artifacts
+.claude/

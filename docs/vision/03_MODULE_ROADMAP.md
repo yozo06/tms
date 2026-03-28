@@ -30,6 +30,9 @@ gantt
     Synapse (Mind Maps)         :       p3a, 2027-01, 2027-06
     Myco Module                 :       p3b, 2027-04, 2027-09
 
+    section Phase 1.5 — Expression
+    Bloom Module (Content)      :active, p15a, 2026-03, 2026-06
+
     section Phase 4 — Scale
     Community Hub               :       p4a, 2027-06, 2027-12
     Mobile Native (Optional)    :       p4b, 2027-09, 2028-03
@@ -71,6 +74,32 @@ The foundational module. Already built and operational.
 | Backend scoping | ❌ Pending | All queries must filter by project_id |
 | Frontend project picker | ❌ Pending | UI to switch between projects |
 | Data backfill | ❌ Pending | Assign existing records to a default project |
+
+---
+
+## Phase 1.5: Expression (Mar 2026 → Jun 2026)
+
+### 🌸 Bloom — The Content Generation Module
+Generates educational visual content using Gemini AI. Infographics, carousels, comics, and more.
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Gemini API Wrapper | ✅ Done | Single + carousel image generation with retry logic |
+| Template System (7 templates) | ✅ Done | Infographic, carousel, comic, comparison, species, data, calendar |
+| Reference Image Auto-Discovery | ✅ Done | Style-organized folders, random selection, rotation support |
+| CLI Tool | ✅ Done | `npx ts-node src/modules/bloom/pipeline/cli.ts` |
+| Quality Checks | ✅ Done | File existence, size validation, metadata logging |
+| Scheduled Task (Manual) | ✅ Done | `wildarc-content-generator` in Claude scheduled tasks |
+| Caption + Hashtag Generation | ✅ Done | Platform-aware captions, auto-generated hashtags |
+| Instagram Direct Posting | ❌ Planned | Meta Graph API integration for auto-publishing |
+| Website Gallery | ❌ Planned | `/bloom` route in React app, filterable gallery |
+| Prompt Template Versioning | ❌ Planned | Supabase registry, A/B testing, Meta-Optimizer integration |
+| Factual Accuracy Pipeline | ❌ Planned | OCR + knowledge base cross-check for educational content |
+| Carousel Slide Consistency | 🟡 In Progress | Improving cross-slide visual coherence |
+
+**Style References:** Richard Belho (@richardbelho), bamboo architecture + permaculture education from Nagaland.
+
+**Module Location:** `src/modules/bloom/pipeline/` | **Content:** `content/bloom/`
 
 ---
 

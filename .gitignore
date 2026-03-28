@@ -33,3 +33,37 @@ coverage/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Legacy frontend directories (replaced by modules/ + core/ structure)
+# These files still exist on disk (FUSE mount prevents deletion) but are
+# removed from git tracking. Yogesh can rm them manually when convenient:
+#   rm -rf frontend/src/api/ frontend/src/components/ frontend/src/pages/ frontend/src/store/
+frontend/src/api/
+frontend/src/components/
+frontend/src/pages/
+frontend/src/store/
+
+# Legacy backend directories (pre-modular structure, superseded by src/modules/ + src/core/)
+# These are untracked — safe to delete manually: rm -rf src/lib/ src/routes/ src/middleware/ src/schemas/
+src/lib/
+src/routes/
+src/middleware/
+src/schemas/
+
+# Git lock artifacts (FUSE mount workaround)
+.git/index.lock.*
+
+# Agent artifacts
+.claude/
+
+# Bloom — browser automation & generated content
+.playwright-profile/       # Google login session — NEVER commit (contains auth cookies)
+content/bloom/generated/   # AI-generated output images — artifacts, not source
+
+# Stray generated HTML files (not part of any module)
+coorg-forest.html
+coorg.html
+
+# Planner transient state
+docs/planner/sessions/.checkpoint
+docs/planner/sessions/.checkpoint.done
