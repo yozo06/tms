@@ -88,7 +88,7 @@ export default function Employees() {
             </select>
             <div className="flex gap-2 pt-2">
               <button onClick={() => saveEdit(u.id)} className="flex-1 bg-forest-600 text-white text-sm font-bold py-3 rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-forest-200"><Check size={16} /> Save</button>
-              <button onClick={() => setEditingId(null)} className="w-[50px] bg-white border border-gray-200 rounded-xl text-gray-500 flex items-center justify-center hover:bg-gray-50"><X size={18} /></button>
+              <button onClick={() => setEditingId(null)} aria-label="Cancel editing" className="w-[50px] bg-white border border-gray-200 rounded-xl text-gray-500 flex items-center justify-center hover:bg-gray-50"><X size={18} /></button>
             </div>
           </div>
         ) : (
@@ -112,8 +112,8 @@ export default function Employees() {
 
         {editingId !== u.id && (isOwner() || u.id === user?.id) && (
           <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-50">
-            <button onClick={() => startEdit(u)} className="p-2 text-gray-400 hover:text-forest-600 hover:bg-forest-50 rounded-lg transition-colors"><Edit2 size={16} /></button>
-            {isOwner() && u.id !== user?.id && <button onClick={() => deactivate(u.id, u.name)} className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><UserX size={16} /></button>}
+            <button onClick={() => startEdit(u)} aria-label={`Edit ${u.name}`} className="p-2.5 text-gray-400 hover:text-forest-600 hover:bg-forest-50 rounded-lg transition-colors"><Edit2 size={16} /></button>
+            {isOwner() && u.id !== user?.id && <button onClick={() => deactivate(u.id, u.name)} aria-label={`Remove ${u.name}`} className="p-2.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><UserX size={16} /></button>}
           </div>
         )}
       </div>
@@ -129,7 +129,7 @@ export default function Employees() {
             <p className="text-sm font-medium text-gray-400 mt-1">Manage access to this project.</p>
           </div>
           {isOwner() && (
-            <button onClick={() => setShowForm(!showForm)} className={`w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg transition-all ${showForm ? 'bg-gray-800' : 'bg-forest-600 shadow-forest-200'}`}>
+            <button onClick={() => setShowForm(!showForm)} aria-label={showForm ? 'Close invite form' : 'Invite team member'} className={`w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg transition-all ${showForm ? 'bg-gray-800' : 'bg-forest-600 shadow-forest-200'}`}>
               {showForm ? <X size={24} /> : <Plus size={24} />}
             </button>
           )}

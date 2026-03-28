@@ -1,7 +1,7 @@
 # 🗂️ WildArc Autonomous Planner — Living Backlog
 
 > This file is maintained by the WildArc Autonomous Planner + Meta-Optimizer.
-> Last updated: 2026-03-28 by Planner — Completed M-07 (Carbon Profile tab in TreeDetail — carbonCalc.ts utility + CarbonProfile component + 8 unit tests). TS: 0 errors. Build still blocked by ARM64 rollup infra issue (Day 5).
+> Last updated: 2026-03-29 by Meta-Optimizer — Added H-16 (backend query scoping, highest-impact Phase 0 remaining item) and H-17 (RLS policy SQL). Elevated H-16 score to 83 (Phase 0 completion, no external deps). C-03/C-04 remain top priority once npm unlocks — check npm access at session start.
 >
 > **Sprint plan:** See `docs/planner/SPRINT_PLAN.md` for phased timeline.
 
@@ -43,10 +43,12 @@ Priority scores are recalculated daily using: **Impact × Phase Alignment ÷ Eff
 | H-08 | **Expand test coverage: auth API routes** | 76 | S2 | 🆕 New | Only 5 test files exist. Add tests for /api/auth/login, /signup, /refresh using Supertest. Target: all auth happy paths + error cases. ~3 hours. |
 | H-09 | **Expand test coverage: arbor API routes** | 74 | S2 | 🆕 New | Add tests for /api/arbor/trees CRUD, /species, /zones, /dashboard using Supertest. Target: happy paths + validation errors. ~4 hours (split if needed). |
 | H-10 | **Expand test coverage: critical UI components** | 70 | S2 | 🆕 New | Add React Testing Library tests for: TreeCard, TreeList (filter logic), Dashboard (stats rendering), Login form. ~3 hours. |
+| H-16 | **Backend API query scoping — filter all endpoints by project_id** | 83 | S2 | 🆕 New | ⚠️ MISSING PHASE 0 ITEM — All trees/zones API routes currently return data without filtering by project_id. Multi-tenant isolation is incomplete at the application layer even once C-05 DB migration runs. Add `WHERE project_id = req.user.activeProjectId` to all arbor API queries (trees, zones, species, dashboard). Pure TypeScript — no npm installs, no DB migrations needed. ~3 hours. Added by Meta-Optimizer 2026-03-29 based on steward 2026-03-28 flag ("highest-impact remaining Phase 0 item"). |
 | H-11 | **Docker Compose for local dev** | 65 | S2 | ✅ Done | Created Dockerfile (production), Dockerfile.dev (dev targets), docker-compose.yml (api+frontend with hot-reload), .dockerignore. 2026-03-27. |
 | H-12 | **Seed data script for fresh deployments** | 72 | S3 | 🆕 New | Fresh clone starts empty — unusable for testing/demo. Create `scripts/seed.ts`: demo project, 20 trees (varied species/zones/health), sample activity + health logs. ~3 hours. |
 | H-13 | **API documentation (OpenAPI / Swagger)** | 68 | S3 | 🆕 New | No way for contributors to discover endpoints. Add swagger-jsdoc + swagger-ui-express. Document all routes with request/response schemas. ~4 hours (split if needed). |
-| H-14 | **Supabase RLS policies for multi-tenant isolation** | 80 | S3 | 🆕 New | No row-level security — any authenticated user can read all projects' data via service role. Write RLS policies for trees, zones, health_observations, activity_log. ⚠️ Migration needs Yogesh to run. |
+| H-14 | **Supabase RLS policies for multi-tenant isolation** | 80 | S3 | 🆕 New | No row-level security — any authenticated user can read all projects' data via service role. Write RLS policies for trees, zones, health_observations, activity_log. ⚠️ Migration needs Yogesh to run. See H-17 — planner will write the SQL first. |
+| H-17 | **Write RLS policy SQL (005_rls_policies.sql)** | 72 | S3 | 🆕 New | Same pattern as C-05 — planner writes the SQL, Yogesh runs it in Supabase SQL Editor. SQL should enable RLS on trees, zones, health_observations, activity_log, tree_photos and create policies that restrict access to project_id = current user's active project. Once SQL is written, escalate to NEEDS_HUMAN. ~1-2 hours. Added by Meta-Optimizer 2026-03-29. |
 | H-15 | **Clean up legacy duplicate files in frontend** | 60 | S5 | ✅ Done | Removed 35 tracked files from git index (frontend/src/api/, components/, pages/, store/). Added .gitignore rules for legacy dirs + backend ghost files (src/lib/, routes/, middleware/, schemas/). FUSE mount prevents physical rm — Yogesh can run: `rm -rf frontend/src/api/ frontend/src/components/ frontend/src/pages/ frontend/src/store/ src/lib/ src/routes/ src/middleware/ src/schemas/`. 2026-03-27. |
 
 ---

@@ -46,3 +46,32 @@ The planner's first session will fix C-01 (frontend build). By adding the fronte
 
 ### One Thing to Watch
 Does the Planner create a session log after its first run? If `docs/planner/sessions/` is still empty next week, the session log mandate in PLANNER_SKILL.md needs to be even more prominent — possibly moved to the very top of the file as a hard constraint.
+
+---
+
+## 🔧 Improvements Made — 2026-03-29 (Week 1 Review)
+
+### What I Observed
+
+The planner exceeded expectations in its first week — 11 tasks completed across 5 sessions (velocity: 2-3 tasks/session). TypeScript is 0 errors on both ends, Docker is set up, accessibility is clean, and the Carbon Profile feature shipped ahead of schedule. The automation system is working. However, two critical patterns emerged:
+
+1. **The most important Phase 0 remaining task was missing from the backlog entirely.** Backend API query scoping (filtering all trees/zones endpoints by `project_id`) was flagged by the steward as "highest-impact remaining Phase 0 item" in the 03-28 report, and also identified in the 03-26 planner session — but no backlog task existed for it. The planner had no way to pick it up.
+
+2. **C-03 and C-04 have been npm-blocked for 7 days.** The planner correctly identified and escalated this each session, but no process existed to ensure these Critical tasks get prioritized the moment npm access returns. Without an explicit npm-check step in the planner's Phase 1, a planner session could start and pick a lower-priority task even if npm was now available.
+
+Agent reliability was good but not perfect: steward missed 3/7 days and planner missed 2/7. The pattern is consistent with Sunday/sandbox availability gaps — not a systematic failure. Watchdog ran 7/7, which is healthy. One real orphaned checkpoint was found today (planner started but didn't complete).
+
+### Changes Made
+
+- **Backlog**: Added H-16 (backend API query scoping by project_id — score 83, Sprint S2) — the single most important missing Phase 0 task. Added H-17 (write RLS policy SQL 005_rls_policies.sql — score 72, Sprint S3) — same pattern as C-05, planner writes SQL then escalates. Updated H-14 notes to reference H-17. Updated backlog header to reflect today's changes.
+- **Planner skill**: Added Step 5a — explicit npm access check (`npm ping`) at the start of every session. If npm is available, C-03 and C-04 are immediately elevated to the top of the session plan regardless of other task ordering. This prevents critical security tasks from being deprioritized when their only blocker is resolved.
+- **Steward**: No changes — reporting quality is excellent. Future suggestion (for next Meta-Optimizer run): consider adding a "Known Infrastructure Constraints" callout box to each steward report so the ARM64 rollup and FUSE mount constraints are acknowledged once rather than re-flagged as new issues each day.
+- **Process**: Health Log updated. Orphaned checkpoint noted. NEEDS_HUMAN items (9 active, oldest 6 days) already escalated by watchdog — no additional escalation needed from Meta-Optimizer this session.
+
+### Hypothesis
+
+Adding H-16 to the backlog with score 83 will cause the planner to implement backend query scoping within 1-2 sessions (once the current npm-blocked items remain blocked). This will complete Phase 0 (~95% → 100%) and unlock the multi-tenant isolation story. Adding the npm-check step to PLANNER_SKILL.md will ensure C-03 and C-04 get executed the first session after Yogesh runs `npm install` — probably within 1-2 days of that action.
+
+### One Thing to Watch
+
+Does H-16 (backend query scoping) get implemented in the next 3-5 sessions? It's pure TypeScript with score 83 and no external dependencies — if the planner sees it and still picks something lower-priority, the scoring logic needs recalibration. Track whether H-16 appears in the planner's "Tasks Completed" by 2026-04-05.

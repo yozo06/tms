@@ -46,8 +46,11 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', ts: new Date().toISOString() })
 })
 
-app.use('/api/auth', authModuleRoutes)
-app.use('/api/arbor', arborModuleRoutes)
+// Mount both modules at /api — the modules define their own sub-paths:
+// auth module: /auth/*, /users/*  → /api/auth/*, /api/users/*
+// arbor module: /trees/*, /species/*, /zones/*, /map/*, /dashboard/*
+app.use('/api', authModuleRoutes)
+app.use('/api', arborModuleRoutes)
 
 // Serve frontend in production
 if (process.env.NODE_ENV === 'production') {

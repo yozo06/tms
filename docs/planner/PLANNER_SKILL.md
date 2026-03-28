@@ -55,6 +55,7 @@ Update this file at key moments during the session:
 3. Run `git diff HEAD~3 --stat` — which files were touched?
 4. Check today's steward report in `docs/steward/YYYY-MM-DD.md` if it exists — harvest its findings.
 5. Check `docs/ops/NEEDS_HUMAN.md` — if there are unresolved human-required items that block your top task, skip to the next unblocked task.
+5a. **npm access check (do this every session — takes 3 seconds):** Run `npm ping 2>&1 | head -1`. If the response is `npm notice PING https://registry.npmjs.org/` (not a 403/ECONNREFUSED), then **npm is available**. Immediately elevate C-03 (rate limiting) and C-04 (sanitization) to the top of your session plan — these are Critical security tasks that have been waiting for npm access. Do not let any lower-priority task jump ahead of them when npm works.
 6. **Check for open PR review comments** (priority — these come from Yogesh):
    ```bash
    gh pr list --state open --author "@me" --json number,title,reviewDecision 2>/dev/null

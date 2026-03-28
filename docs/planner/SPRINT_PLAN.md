@@ -60,12 +60,13 @@
 
 | # | Task | Est. | Batchable? |
 |---|------|------|-----------|
-| H-07 | GitHub Actions CI workflow | 2 hrs | No (infra setup) |
+| H-07 | ~~GitHub Actions CI workflow~~ | — | ✅ **Done early** (2026-03-26 confirmed) |
+| H-11 | ~~Docker Compose setup~~ | — | ✅ **Done early** (2026-03-27) |
+| H-16 | Backend query scoping (filter all endpoints by project_id) | 3 hrs | No (critical for Phase 0 completion) — **Added by Meta-Optimizer 2026-03-29** |
 | H-08 | Test auth API routes (Supertest) | 3 hrs | No (focused test writing) |
 | H-09 | Test arbor API routes (Supertest) | 4 hrs | Split: 2 sessions |
 | H-10 | Test critical UI components | 3 hrs | No (focused test writing) |
 | M-08 | Test frontend modules (pages) | 4 hrs | Split: 2 sessions |
-| H-11 | Docker Compose setup | 2 hrs | No (infra setup) |
 
 **Expected velocity:** 1 task per day (test writing is thorough work, not batchable).
 
@@ -153,9 +154,9 @@
 
 | # | Task | Est. | Batchable? |
 |---|------|------|-----------|
-| H-15 | Delete legacy duplicate frontend files | 2 hrs | No (careful import verification) |
-| M-06 | Biodiversity index calculator | 2 hrs | Yes — batch with M-07 |
-| M-07 | Carbon sequestration estimator | 2 hrs | Yes — batch with M-06 |
+| H-15 | ~~Delete legacy duplicate frontend files~~ | — | ✅ **Done early** (2026-03-27) — files untracked from git; physical rm pending Yogesh |
+| M-06 | Biodiversity index calculator | 2 hrs | Yes — batch with M-07 (if M-07 re-visit needed) |
+| M-07 | ~~Carbon sequestration estimator~~ | — | ✅ **Done early** (2026-03-28) — carbonCalc.ts + CarbonProfile component + 8 tests |
 | L-06 | Public README rewrite | 2 hrs | No (writing, not code) |
 
 **Yogesh action needed:**
