@@ -53,8 +53,8 @@ export default function HealthLog() {
             </div>
           </div>
           <div className="flex gap-6">
-            <label className="flex items-center gap-2 text-sm text-gray-600"><input type="checkbox" checked={form.pest_presence} onChange={set('pest_presence')} className="w-4 h-4" />Pests present</label>
-            <label className="flex items-center gap-2 text-sm text-gray-600"><input type="checkbox" checked={form.disease_signs} onChange={set('disease_signs')} className="w-4 h-4" />Disease signs</label>
+            <label className="flex items-center gap-2 text-sm text-gray-600"><input type="checkbox" checked={form.pest_presence} onChange={set('pest_presence')} className="w-5 h-5 min-w-[20px]" />Pests present</label>
+            <label className="flex items-center gap-2 text-sm text-gray-600"><input type="checkbox" checked={form.disease_signs} onChange={set('disease_signs')} className="w-5 h-5 min-w-[20px]" />Disease signs</label>
           </div>
           <textarea value={form.additional_notes} onChange={set('additional_notes')} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none" rows={2} placeholder="Additional notes…" />
           <button onClick={submit} disabled={saving} className="w-full bg-forest-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60">{saving?'Saving…':'Save Observation'}</button>
