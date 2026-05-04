@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { getPublicTree } from '../api/trees'
-import Spinner from '../components/Spinner'
+import { getPublicTree } from '../modules/arbor/api/trees'
+import Spinner from '../core/components/Spinner'
 import { Leaf, Heart } from 'lucide-react'
 
 const ROLE_ICONS: Record<string,string> = {

@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import { db } from '../lib/supabase'
-import { authenticate, requireOwner } from '../middleware/authenticate'
-import { validate } from '../middleware/validate'
+import { db } from '../../../core/lib/supabase'
+import { authenticate, requireOwner } from '../../../core/middleware/authenticate'
+import { validate } from '../../../core/middleware/validate'
 import { zoneCreateSchema, zoneUpdateSchema } from '../schemas'
 
 const r = Router()
