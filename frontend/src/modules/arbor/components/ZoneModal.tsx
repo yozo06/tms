@@ -35,7 +35,7 @@ export default function ZoneModal({ onClose, onSuccess }: { onClose: () => void,
             <div className="bg-white w-full sm:max-w-md sm:rounded-3xl rounded-t-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-5">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-gray-800">New Zone</h2>
-                    <button onClick={onClose} className="p-2 bg-gray-100 rounded-full text-gray-600 active:scale-95"><X size={18} /></button>
+                    <button onClick={onClose} aria-label="Close zone modal" className="p-2 bg-gray-100 rounded-full text-gray-600 active:scale-95"><X size={18} /></button>
                 </div>
 
                 <Field label="Zone Code *" k="zone_code" form={form} onChange={set('zone_code')} placeholder="e.g. Z1-NORTH" />

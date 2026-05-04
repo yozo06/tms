@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { CANVAS_COLORS } from '../../../core/constants/actionColors'
 
 interface MapTree { id: number; tree_code: string; coord_x?: number; coord_y?: number; action: string }
 
@@ -34,7 +35,7 @@ export default function MapPicker({ trees, value, onChange }: {
         ctx.clearRect(0, 0, W, H)
 
         // Draw Grid
-        ctx.strokeStyle = '#f3f4f6'; ctx.lineWidth = 1
+        ctx.strokeStyle = CANVAS_COLORS.gridStrokeLight; ctx.lineWidth = 1
         for (let i = 0; i <= 10; i++) {
             const gx = 20 + (i / 10) * (W - 40); ctx.beginPath(); ctx.moveTo(gx, 20); ctx.lineTo(gx, H - 20); ctx.stroke()
             const gy = 20 + (i / 10) * (H - 40); ctx.beginPath(); ctx.moveTo(20, gy); ctx.lineTo(W - 20, gy); ctx.stroke()
@@ -43,15 +44,15 @@ export default function MapPicker({ trees, value, onChange }: {
         // Draw Existing Trees (Subtle)
         trees.filter(t => t.coord_x != null).forEach(t => {
             const [cx, cy] = toCanvas(t.coord_x!, t.coord_y!, W, H)
-            ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fillStyle = '#e5e7eb'; ctx.fill()
+            ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fillStyle = CANVAS_COLORS.existingTreeDot; ctx.fill()
         })
 
         // Draw Current Selection
         if (value) {
             const [cx, cy] = toCanvas(value.x, value.y, W, H)
-            ctx.beginPath(); ctx.arc(cx, cy, 8, 0, Math.PI * 2); ctx.fillStyle = '#166534'; ctx.fill()
+            ctx.beginPath(); ctx.arc(cx, cy, 8, 0, Math.PI * 2); ctx.fillStyle = CANVAS_COLORS.newTreeMarker; ctx.fill()
             ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke()
-            ctx.fillStyle = '#166534'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'
+            ctx.fillStyle = CANVAS_COLORS.newTreeMarker; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'
             ctx.fillText('NEW TREE', cx, cy - 12)
         }
     }, [trees, value])

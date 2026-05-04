@@ -61,11 +61,11 @@ export default function TreeDetail() {
 
         {/* Top Nav */}
         <div className="absolute top-0 w-full p-4 flex justify-between items-center z-10 pt-safe">
-          <button onClick={() => nav(-1)} className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-sm hover:bg-white/30 transition-colors">
+          <button onClick={() => nav(-1)} aria-label="Go back" className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-sm hover:bg-white/30 transition-colors">
             <ArrowLeft size={18} />
           </button>
           {isOwner() && (
-            <button onClick={() => nav(`/trees/${code}/edit`)} className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-sm hover:bg-white/30 transition-colors">
+            <button onClick={() => nav(`/trees/${code}/edit`)} aria-label="Edit tree" className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-sm hover:bg-white/30 transition-colors">
               <Edit2 size={16} />
             </button>
           )}
@@ -196,7 +196,7 @@ export default function TreeDetail() {
             <div className="grid grid-cols-2 gap-3">
               {photos.map(p => (
                 <div key={p.id} className="aspect-[4/5] rounded-[1.5rem] overflow-hidden shadow-sm border border-gray-100/50 bg-gray-100">
-                  <img src={p.url} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 ease-out cursor-pointer" />
+                  <img src={p.url} alt={`Photo of ${name} taken on ${p.created_at ? new Date(p.created_at).toLocaleDateString() : 'unknown date'}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 ease-out cursor-pointer" />
                 </div>
               ))}
             </div>
