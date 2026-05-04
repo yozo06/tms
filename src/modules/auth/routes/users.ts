@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import { db } from '../lib/supabase'
-import { hashPassword } from '../lib/auth'
-import { authenticate, requireOwner } from '../middleware/authenticate'
+import { db } from '../../../core/lib/supabase'
+import { hashPassword } from '../../../core/lib/auth'
+import { authenticate, requireOwner } from '../../../core/middleware/authenticate'
 
 const r = Router()
 r.use(authenticate)

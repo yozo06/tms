@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { useAuthStore } from '../store/auth.store'
-import { client } from '../api/client'
+import { useAuthStore } from '../core/store/auth.store'
+import { client } from '../core/api/client'
 import toast from 'react-hot-toast'
 import { TreePine } from 'lucide-react'
 
