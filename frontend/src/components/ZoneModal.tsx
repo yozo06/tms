@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
-import { createZone } from '../api/species'
+import { createZone } from '../modules/arbor/api/species'
 import toast from 'react-hot-toast'
 
 export default function ZoneModal({ onClose, onSuccess }: { onClose: () => void, onSuccess: (newZone: any) => void }) {

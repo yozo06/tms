@@ -1,9 +1,9 @@
 import { Router } from 'express'
 import multer from 'multer'
-import { db } from '../lib/supabase'
-import { uploadToDrive } from '../lib/drive'
-import { authenticate, requireOwner } from '../middleware/authenticate'
-import { validate } from '../middleware/validate'
+import { db } from '../../../core/lib/supabase'
+import { uploadToDrive } from '../../../core/lib/drive'
+import { authenticate, requireOwner } from '../../../core/middleware/authenticate'
+import { validate } from '../../../core/middleware/validate'
 import { treeCreateSchema, treeUpdateSchema, treeActivitySchema, treeHealthSchema, treeContributorSchema } from '../schemas'
 
 const r = Router()
