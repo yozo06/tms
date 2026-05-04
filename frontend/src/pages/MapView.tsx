@@ -45,7 +45,7 @@ export default function MapView() {
             </div>
             <div className="flex gap-2 mt-3">
               <button onClick={() => nav(`/trees/${selected.tree_code}`)} className="flex-1 bg-forest-600 text-white text-sm font-medium py-2 rounded-xl">View Tree</button>
-              <button onClick={() => setSelected(null)} className="w-10 h-9 border border-gray-200 rounded-xl text-gray-400 flex items-center justify-center">✕</button>
+              <button onClick={() => setSelected(null)} aria-label="Dismiss selection" className="w-10 h-9 border border-gray-200 rounded-xl text-gray-400 flex items-center justify-center">✕</button>
             </div>
           </div>
         )}
