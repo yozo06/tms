@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getDashboardStats } from '../api/dashboard'
-import { getTrees } from '../api/trees'
-import { useAuthStore } from '../../../core/store/auth.store'
+import { getDashboardStats } from '../../../api/dashboard'
+import { getTrees } from '../../../api/trees'
+import { useAuthStore } from '../../../store/auth.store'
 import { Plus, AlertTriangle, CheckCircle2, Clock } from 'lucide-react'
-import Spinner from '../../../core/components/Spinner'
-import ProjectSwitcher from '../../../core/components/ProjectSwitcher'
+import Spinner from '../../../components/Spinner'
 
 export default function Dashboard() {
   const { user, isOwner } = useAuthStore()
@@ -28,9 +27,6 @@ export default function Dashboard() {
     <div className="px-4 pt-12 pb-4">
       <div className="flex justify-between items-start mb-6">
         <div>
-          <div className="pointer-events-auto mb-2 relative z-50">
-            <ProjectSwitcher />
-          </div>
           <h1 className="text-2xl font-bold text-gray-800">Welcome, {user?.name.split(' ')[0]}</h1>
         </div>
         {isOwner() && (

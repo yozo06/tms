@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getTrees, type Tree } from '../api/trees'
-import { getZones } from '../api/species'
-import { useAuthStore } from '../../../core/store/auth.store'
+import { getTrees, type Tree } from '../../../api/trees'
+import { getZones } from '../../../api/species'
+import { useAuthStore } from '../../../store/auth.store'
 import TreeCard from '../components/TreeCard'
-import Spinner, { EmptyState } from '../../../core/components/Spinner'
+import Spinner, { EmptyState } from '../../../components/Spinner'
 import { Search, Plus, Filter } from 'lucide-react'
 
 const ACTIONS = ['all', 'cut', 'trim', 'keep', 'monitor', 'treat', 'pending']

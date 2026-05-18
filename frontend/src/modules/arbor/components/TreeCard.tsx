@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
-import type { Tree } from '../api/trees'
-import { ActionBadge, StatusDot } from './ActionBadge'
+import type { Tree } from '../../../api/trees'
+import { ActionBadge, StatusDot } from '../../../components/ActionBadge'
 
 /** Returns a Tailwind-compatible hex for the health bar fill */
 function healthColor(score: number): string {
