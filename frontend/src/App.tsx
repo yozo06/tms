@@ -15,7 +15,6 @@ import MapView from './pages/MapView'
 import Employees from './pages/Employees'
 import Profile from './pages/Profile'
 import PublicTree from './pages/PublicTree'
-import PrintSheet from './pages/PrintSheet'
 import GrowMate from './modules/growmate/pages/GrowMate'
 
 function RequireAuth({ children }: { children: JSX.Element }) {
@@ -60,8 +59,7 @@ export default function App() {
           <Route path="/trees/:code/health" element={<RequireEmployeeOrOwner><HealthLog /></RequireEmployeeOrOwner>} />
           <Route path="/trees/:code/activity" element={<RequireEmployeeOrOwner><ActivityLog /></RequireEmployeeOrOwner>} />
           <Route path="/map" element={<RequireOwner><MapView /></RequireOwner>} />
-          <Route path="/print-sheet" element={<RequireAuth><PrintSheet /></RequireAuth>} />
-          <Route path="/employees" element={<RequireOwner><Employees /></RequireOwner>} />
+<Route path="/employees" element={<RequireOwner><Employees /></RequireOwner>} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/growmate" element={<GrowMate />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
