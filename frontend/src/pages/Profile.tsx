@@ -1,27 +1,47 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { changePassword } from '../core/api/auth'
-import { updateUser } from '../settings/api/users'
-import { useAuthStore } from '../core/store/auth.store'
+import { changePassword } from '../api/auth'
+import { updateUser } from '../api/users'
+import { useAuthStore } from '../store/auth.store'
 import toast from 'react-hot-toast'
-import { LogOut, Lock, Edit2, Check } from 'lucide-react'
+import { LogOut, Lock, Edit2, Check, ChevronRight } from 'lucide-react'
+
+const F   = '#2A5934'
+const FL  = '#EAF3DE'
+const OFF = '#F7F5EE'
+const NGT = '#1C2B1F'
+const MUT = '#6B7B6F'
+
+const ROLE_STYLE: Record<string, { bg: string; fg: string }> = {
+  owner:     { bg: FL,        fg: F   },
+  employee:  { bg: '#E8F0FE', fg: '#1A56DB' },
+  volunteer: { bg: '#F0EBFE', fg: '#6C3EBF' },
+}
 
 export default function Profile() {
   const { user, logout, setUser } = useAuthStore()
   const nav = useNavigate()
-  const [showPw, setShowPw] = useState(false)
+  const [showPw,   setShowPw]   = useState(false)
   const [showEdit, setShowEdit] = useState(false)
-  const [curr, setCurr] = useState(''); const [next, setNext] = useState('')
+  const [curr, setCurr] = useState('')
+  const [next, setNext] = useState('')
   const [saving, setSaving] = useState(false)
-  const [editForm, setEditForm] = useState({ name: user?.name || '', phone: (user as any)?.phone || '', bio: (user as any)?.bio || '' })
+  const [editForm, setEditForm] = useState({
+    name:  user?.name || '',
+    phone: (user as any)?.phone || '',
+    bio:   (user as any)?.bio   || '',
+  })
 
   const doLogout = () => { logout(); nav('/login', { replace: true }) }
 
   const submitPw = async () => {
     if (!curr || !next) return
     setSaving(true)
-    try { await changePassword(curr, next); toast.success('Password changed'); setShowPw(false); setCurr(''); setNext('') }
-    finally { setSaving(false) }
+    try {
+      await changePassword(curr, next)
+      toast.success('Password changed')
+      setShowPw(false); setCurr(''); setNext('')
+    } finally { setSaving(false) }
   }
 
   const submitEdit = async () => {
@@ -36,54 +56,97 @@ export default function Profile() {
     finally { setSaving(false) }
   }
 
-  const ROLE_COLOR: Record<string, string> = { owner: 'bg-forest-100 text-forest-700', employee: 'bg-blue-100 text-blue-700', volunteer: 'bg-purple-100 text-purple-700' }
+  const role = user?.role || 'employee'
+  const roleStyle = ROLE_STYLE[role] || ROLE_STYLE.employee
+  const initials = user?.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?'
+
+  const inputStyle = {
+    width: '100%', boxSizing: 'border-box' as const,
+    background: OFF, border: '1px solid rgba(42,89,52,0.18)',
+    borderRadius: 10, padding: '10px 14px', fontSize: 14, color: NGT, outline: 'none',
+  }
+
+  const sectionCard = {
+    background: '#fff', borderRadius: 16, marginBottom: 10,
+    border: '1px solid rgba(42,89,52,0.08)', overflow: 'hidden' as const,
+  }
 
   return (
-    <div className="px-4 pt-12 pb-8">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Profile</h1>
-      <div className="bg-white rounded-2xl p-6 shadow-sm mb-4 flex flex-col items-center text-center">
-        <div className="w-16 h-16 rounded-full bg-forest-100 flex items-center justify-center text-forest-700 font-bold text-2xl mb-3">{user?.name[0]}</div>
-        <h2 className="text-xl font-bold text-gray-800">{user?.name}</h2>
-        <p className="text-sm text-gray-400 mb-2">{user?.email}</p>
-        <span className={`text-xs px-3 py-1 rounded-full capitalize ${ROLE_COLOR[user?.role || 'employee']}`}>{user?.role}</span>
+    <div style={{ padding: '52px 16px 24px', background: OFF, minHeight: '100%' }}>
+      <h1 style={{ fontSize: 22, fontWeight: 500, color: NGT, marginBottom: 20 }}>Profile</h1>
+
+      {/* Avatar card */}
+      <div style={{ ...sectionCard, padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: 16 }}>
+        <div style={{ width: 64, height: 64, borderRadius: '50%', background: FL, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 500, color: F, marginBottom: 12 }}>
+          {initials}
+        </div>
+        <h2 style={{ fontSize: 18, fontWeight: 500, color: NGT, marginBottom: 3 }}>{user?.name}</h2>
+        <p style={{ fontSize: 13, color: MUT, marginBottom: 10 }}>{user?.email}</p>
+        <span style={{ fontSize: 11, padding: '3px 12px', borderRadius: 20, background: roleStyle.bg, color: roleStyle.fg, fontWeight: 500, textTransform: 'capitalize' }}>
+          {role}
+        </span>
       </div>
-      <div className="space-y-3">
-        <button onClick={() => setShowEdit(f => !f)} className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left active:scale-95 transition-transform">
-          <Edit2 size={18} className="text-gray-400" /><span className="font-medium text-gray-700">Edit Profile</span>
+
+      {/* Edit Profile */}
+      <div style={sectionCard}>
+        <button onClick={() => setShowEdit(f => !f)}
+          style={{ width: '100%', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+          <Edit2 size={16} color={MUT} />
+          <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: NGT }}>Edit Profile</span>
+          <ChevronRight size={16} color={MUT} style={{ transform: showEdit ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
         </button>
         {showEdit && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
-            <div><label className="text-xs text-gray-500 uppercase font-medium">Name</label>
-              <input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
-                className="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
+          <div style={{ padding: '0 20px 20px', borderTop: '1px solid rgba(42,89,52,0.06)' }}>
+            <div style={{ marginTop: 16, marginBottom: 12 }}>
+              <label style={{ fontSize: 10, fontWeight: 500, color: MUT, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 5 }}>Name</label>
+              <input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} style={inputStyle} />
             </div>
-            <div><label className="text-xs text-gray-500 uppercase font-medium">Phone</label>
-              <input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))}
-                className="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" placeholder="+91 98765 43210" />
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 10, fontWeight: 500, color: MUT, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 5 }}>Phone</label>
+              <input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} placeholder="+91 98765 43210" style={inputStyle} />
             </div>
-            <div><label className="text-xs text-gray-500 uppercase font-medium">Bio</label>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 10, fontWeight: 500, color: MUT, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 5 }}>Bio</label>
               <textarea value={editForm.bio} onChange={e => setEditForm(f => ({ ...f, bio: e.target.value }))} rows={2}
-                className="w-full mt-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" placeholder="Brief description about yourself…" />
+                placeholder="Brief description…" style={{ ...inputStyle, resize: 'none' }} />
             </div>
-            <button onClick={submitEdit} disabled={saving} className="w-full bg-forest-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 flex items-center justify-center gap-2">
-              <Check size={16} />{saving ? 'Saving…' : 'Save Profile'}
+            <button onClick={submitEdit} disabled={saving}
+              style={{ width: '100%', background: F, color: OFF, border: 'none', borderRadius: 10, padding: '12px 0', fontSize: 14, fontWeight: 500, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.65 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+              <Check size={15} />{saving ? 'Saving…' : 'Save Profile'}
             </button>
           </div>
         )}
-        <button onClick={() => setShowPw(f => !f)} className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left active:scale-95 transition-transform">
-          <Lock size={18} className="text-gray-400" /><span className="font-medium text-gray-700">Change Password</span>
+      </div>
+
+      {/* Change Password */}
+      <div style={sectionCard}>
+        <button onClick={() => setShowPw(f => !f)}
+          style={{ width: '100%', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+          <Lock size={16} color={MUT} />
+          <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: NGT }}>Change Password</span>
+          <ChevronRight size={16} color={MUT} style={{ transform: showPw ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
         </button>
         {showPw && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
-            <input type="password" value={curr} onChange={e => setCurr(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" placeholder="Current password" />
-            <input type="password" value={next} onChange={e => setNext(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" placeholder="New password" />
-            <button onClick={submitPw} disabled={saving} className="w-full bg-forest-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60">{saving ? 'Saving…' : 'Update Password'}</button>
+          <div style={{ padding: '0 20px 20px', borderTop: '1px solid rgba(42,89,52,0.06)' }}>
+            <div style={{ marginTop: 16, marginBottom: 12 }}>
+              <input type="password" value={curr} onChange={e => setCurr(e.target.value)} placeholder="Current password" style={inputStyle} />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <input type="password" value={next} onChange={e => setNext(e.target.value)} placeholder="New password" style={inputStyle} />
+            </div>
+            <button onClick={submitPw} disabled={saving}
+              style={{ width: '100%', background: F, color: OFF, border: 'none', borderRadius: 10, padding: '12px 0', fontSize: 14, fontWeight: 500, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.65 : 1 }}>
+              {saving ? 'Saving…' : 'Update Password'}
+            </button>
           </div>
         )}
-        <button onClick={doLogout} className="w-full bg-red-50 border border-red-100 rounded-2xl p-4 flex items-center gap-3 text-red-600 font-medium active:scale-95 transition-transform">
-          <LogOut size={18} />Sign Out
-        </button>
       </div>
+
+      {/* Sign out */}
+      <button onClick={doLogout}
+        style={{ width: '100%', background: '#FCEBEB', border: '1px solid rgba(226,75,74,0.18)', borderRadius: 16, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, color: '#E24B4A', fontSize: 14, fontWeight: 500, cursor: 'pointer', marginTop: 4 }}>
+        <LogOut size={16} />Sign Out
+      </button>
     </div>
   )
 }

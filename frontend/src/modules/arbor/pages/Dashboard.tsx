@@ -1,94 +1,133 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getDashboardStats } from '../api/dashboard'
-import { getTrees } from '../api/trees'
-import { useAuthStore } from '../../../core/store/auth.store'
-import { Plus, AlertTriangle, CheckCircle2, Clock } from 'lucide-react'
-import Spinner from '../../../core/components/Spinner'
-import ProjectSwitcher from '../../../core/components/ProjectSwitcher'
+import { getDashboardStats } from '../../../api/dashboard'
+import { getTrees } from '../../../api/trees'
+import { useAuthStore } from '../../../store/auth.store'
+import { Plus, AlertTriangle, ChevronRight } from 'lucide-react'
+import Spinner from '../../../components/Spinner'
+
+const F   = '#2A5934'
+const FL  = '#EAF3DE'
+const FM  = '#639922'
+const OFF = '#F7F5EE'
+const NGT = '#1C2B1F'
+const MUT = '#6B7B6F'
+const AMB = '#D8A419'
+const RED = '#E24B4A'
+
+const STAT_CARDS = (stats: any) => [
+  { label: 'Total',   val: stats.total,     bg: FL,        fg: F   },
+  { label: 'Done',    val: stats.completed, bg: FL,        fg: FM  },
+  { label: 'To Cut',  val: stats.toCut,     bg: '#FCEBEB', fg: RED },
+  { label: 'To Trim', val: stats.toTrim,    bg: '#FEF7E6', fg: AMB },
+]
 
 export default function Dashboard() {
   const { user, isOwner } = useAuthStore()
   const nav = useNavigate()
-  const [data, setData] = useState<any>(null)
+  const [data, setData]     = useState<any>(null)
   const [urgent, setUrgent] = useState<any[]>([])
 
   useEffect(() => {
     Promise.all([getDashboardStats(), getTrees({ priority: 'urgent', limit: 3 })])
-      .then(([statsData, urgentData]) => {
-        setData(statsData)
-        setUrgent(urgentData.trees)
-      })
+      .then(([s, u]) => { setData(s); setUrgent(u.trees) })
   }, [])
 
   if (!data) return <Spinner label="Loading dashboard…" />
   const { stats, zones } = data
+  const pct = Math.round((stats.completed / (stats.total || 1)) * 100)
 
   return (
-    <div className="px-4 pt-12 pb-4">
-      <div className="flex justify-between items-start mb-6">
+    <div style={{ padding: '52px 16px 16px', background: OFF, minHeight: '100%' }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
-          <div className="pointer-events-auto mb-2 relative z-50">
-            <ProjectSwitcher />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800">Welcome, {user?.name.split(' ')[0]}</h1>
+          <p style={{ fontSize: 12, color: MUT, marginBottom: 2 }}>Good morning</p>
+          <h1 style={{ fontSize: 24, fontWeight: 500, color: NGT, lineHeight: 1.2 }}>
+            {user?.name.split(' ')[0]} 👋
+          </h1>
         </div>
         {isOwner() && (
-          <button onClick={() => nav('/trees/new')} aria-label="Add new tree" className="w-11 h-11 bg-forest-600 rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform">
-            <Plus size={20} className="text-white" />
+          <button
+            onClick={() => nav('/trees/new')}
+            aria-label="Add new tree"
+            style={{ width: 44, height: 44, background: F, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
+          >
+            <Plus size={18} color={OFF} />
           </button>
         )}
       </div>
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        {[
-          { label: 'Total Trees', val: stats.total, color: 'bg-forest-50 text-forest-700' },
-          { label: 'Completed', val: stats.completed, color: 'bg-green-50 text-green-700' },
-          { label: 'To Cut', val: stats.toCut, color: 'bg-red-50 text-red-700' },
-          { label: 'To Trim', val: stats.toTrim, color: 'bg-yellow-50 text-yellow-700' },
-        ].map(s => (
-          <div key={s.label} className={`rounded-2xl p-4 ${s.color}`}>
-            <p className="text-3xl font-bold">{s.val}</p>
-            <p className="text-xs font-medium opacity-70 mt-0.5">{s.label}</p>
+
+      {/* Stat cards 2x2 */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+        {STAT_CARDS(stats).map(s => (
+          <div key={s.label} style={{ background: s.bg, borderRadius: 16, padding: '16px 16px 14px' }}>
+            <p style={{ fontSize: 30, fontWeight: 500, color: s.fg, lineHeight: 1 }}>{s.val}</p>
+            <p style={{ fontSize: 11, color: s.fg, opacity: 0.75, marginTop: 4 }}>{s.label}</p>
           </div>
         ))}
       </div>
-      <div className="bg-white rounded-2xl p-4 shadow-sm mb-4">
-        <div className="flex justify-between items-center mb-2">
-          <p className="text-sm font-semibold text-gray-700">Overall Progress</p>
-          <p className="text-sm font-bold text-forest-600">{Math.round((stats.completed / (stats.total || 1)) * 100)}%</p>
+
+      {/* Progress bar */}
+      <div style={{ background: '#fff', borderRadius: 16, padding: 16, marginBottom: 14, border: '1px solid rgba(42,89,52,0.08)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span style={{ fontSize: 13, fontWeight: 500, color: NGT }}>Overall Progress</span>
+          <span style={{ fontSize: 13, fontWeight: 500, color: FM }}>{pct}%</span>
         </div>
-        <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-          <div className="h-full bg-forest-500 rounded-full transition-all" style={{ width: `${(stats.completed / (stats.total || 1)) * 100}%` }} />
+        <div style={{ height: 8, background: FL, borderRadius: 8, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${pct}%`, background: F, borderRadius: 8, transition: 'width 0.6s ease' }} />
         </div>
-        <div className="flex justify-between text-xs text-gray-400 mt-2">
-          <span className="flex items-center gap-1"><Clock size={10} /> {stats.pending} pending</span>
-          <span className="flex items-center gap-1"><AlertTriangle size={10} /> {stats.inProgress} in progress</span>
-          <span className="flex items-center gap-1"><CheckCircle2 size={10} /> {stats.completed} done</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+          <span style={{ fontSize: 11, color: MUT }}>{stats.pending} pending</span>
+          <span style={{ fontSize: 11, color: AMB }}>{stats.inProgress} in progress</span>
+          <span style={{ fontSize: 11, color: FM }}>{stats.completed} done</span>
         </div>
       </div>
+
+      {/* Urgent items */}
       {urgent.length > 0 && (
-        <div className="bg-red-50 border border-red-100 rounded-2xl p-4 mb-4">
-          <p className="text-xs font-semibold text-red-600 uppercase mb-3 flex items-center gap-1"><AlertTriangle size={12} /> Urgent</p>
+        <div style={{ background: '#FCEBEB', border: '1px solid rgba(226,75,74,0.15)', borderRadius: 16, padding: 16, marginBottom: 14 }}>
+          <p style={{ fontSize: 11, fontWeight: 500, color: RED, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <AlertTriangle size={11} /> Urgent attention
+          </p>
           {urgent.map((t: any) => (
-            <div key={t.id} className="flex items-center justify-between py-2 border-b border-red-100 last:border-0 cursor-pointer" onClick={() => nav(`/trees/${t.tree_code}`)}>
+            <div key={t.id} onClick={() => nav(`/trees/${t.tree_code}`)}
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: '1px solid rgba(226,75,74,0.12)', cursor: 'pointer' }}>
               <div>
-                <p className="font-medium text-sm text-gray-800">{t.custom_common_name || t.species?.common_name}</p>
-                <p className="text-xs font-mono text-gray-400">{t.tree_code}</p>
+                <p style={{ fontSize: 13, fontWeight: 500, color: NGT }}>{t.custom_common_name || t.species?.common_name}</p>
+                <p style={{ fontSize: 10, fontFamily: 'monospace', color: MUT, marginTop: 1 }}>{t.tree_code}</p>
               </div>
-              <span className="text-xs bg-red-600 text-white px-2 py-0.5 rounded-full capitalize">{t.action}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 10, background: RED, color: '#fff', padding: '2px 8px', borderRadius: 20, textTransform: 'capitalize' }}>{t.action}</span>
+                <ChevronRight size={14} color={MUT} />
+              </div>
             </div>
           ))}
         </div>
       )}
+
+      {/* Zones breakdown */}
       {zones.length > 0 && (
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <p className="text-xs font-semibold text-gray-500 uppercase mb-3">By Zone</p>
-          {zones.map((z: any) => (
-            <div key={z.zone_code} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-              <div><p className="font-medium text-sm text-gray-800">{z.zone_name}</p><p className="text-xs text-gray-400">{z.zone_code}</p></div>
-              <div className="text-right"><p className="text-sm font-bold text-gray-700">{z.total_trees} trees</p><p className="text-xs text-green-500">{z.completed} done</p></div>
-            </div>
-          ))}
+        <div style={{ background: '#fff', borderRadius: 16, padding: 16, border: '1px solid rgba(42,89,52,0.08)' }}>
+          <p style={{ fontSize: 11, fontWeight: 500, color: MUT, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>By Zone</p>
+          {zones.map((z: any, i: number) => {
+            const zp = Math.round((z.completed / (z.total_trees || 1)) * 100)
+            return (
+              <div key={z.zone_code} style={{ paddingBottom: 12, marginBottom: 12, borderBottom: i < zones.length - 1 ? '1px solid rgba(28,43,31,0.06)' : 'none' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 500, color: NGT }}>{z.zone_name}</p>
+                    <p style={{ fontSize: 10, color: MUT }}>{z.zone_code} · {z.total_trees} trees</p>
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: FM }}>{zp}%</span>
+                </div>
+                <div style={{ height: 4, background: FL, borderRadius: 4, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${zp}%`, background: FM, borderRadius: 4 }} />
+                </div>
+              </div>
+            )
+          })}
         </div>
       )}
     </div>
