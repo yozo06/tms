@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getTree, updateTree, getPhotos, uploadPhoto, getActivity } from '../modules/arbor/api/trees'
-import { useAuthStore } from '../core/store/auth.store'
-import { ActionBadge, PriorityBadge, StatusDot } from '../modules/arbor/components/ActionBadge'
-import Spinner from '../core/components/Spinner'
+import { getTree, updateTree, getPhotos, uploadPhoto, getActivity } from '../api/trees'
+import { useAuthStore } from '../store/auth.store'
+import { ActionBadge, PriorityBadge, StatusDot } from '../components/ActionBadge'
+import Spinner from '../components/Spinner'
 import toast from 'react-hot-toast'
-import { ArrowLeft, Camera, Activity, Edit2, CheckCircle2, MapPin, Calendar, Ruler } from 'lucide-react'
+import { ArrowLeft, Camera, Activity, Edit2, CheckCircle2, MapPin, Calendar, Ruler, QrCode, X, Download } from 'lucide-react'
 
 const STATUSES = ['pending', 'in_progress', 'completed', 'on_hold']
 
@@ -19,6 +19,7 @@ export default function TreeDetail() {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [statusNote, setStatusNote] = useState('')
+  const [showQR, setShowQR] = useState(false)
 
   useEffect(() => {
     Promise.all([getTree(code!), getPhotos(code!), getActivity(code!)])
@@ -61,11 +62,11 @@ export default function TreeDetail() {
 
         {/* Top Nav */}
         <div className="absolute top-0 w-full p-4 flex justify-between items-center z-10 pt-safe">
-          <button onClick={() => nav(-1)} aria-label="Go back" className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-sm hover:bg-white/30 transition-colors">
+          <button onClick={() => nav(-1)} className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-sm hover:bg-white/30 transition-colors">
             <ArrowLeft size={18} />
           </button>
           {isOwner() && (
-            <button onClick={() => nav(`/trees/${code}/edit`)} aria-label="Edit tree" className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-sm hover:bg-white/30 transition-colors">
+            <button onClick={() => nav(`/trees/${code}/edit`)} className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-sm hover:bg-white/30 transition-colors">
               <Edit2 size={16} />
             </button>
           )}
@@ -154,23 +155,82 @@ export default function TreeDetail() {
         {!isVolunteer() && (
           <div className="bg-white rounded-[2rem] p-6 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-gray-100/30">
             <p className="text-[11px] font-display font-bold text-gray-400 uppercase tracking-widest mb-4">Tree Operations</p>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={() => nav(`/trees/${code}/activity`)}
-                className="bg-forest-50 py-5 rounded-[1.5rem] flex flex-col items-center gap-2 border border-forest-100/50 hover:bg-forest-100 transition-colors shadow-sm"
+                className="bg-forest-50 py-4 rounded-[1.5rem] flex flex-col items-center gap-2 border border-forest-100/50 hover:bg-forest-100 transition-colors shadow-sm"
               >
-                <div className="bg-white p-2.5 rounded-full shadow-sm"><Activity size={18} className="text-forest-600" /></div>
-                <span className="text-[11px] font-bold text-forest-700 tracking-widest uppercase mt-1">Activity Log</span>
+                <div className="bg-white p-2.5 rounded-full shadow-sm"><Activity size={16} className="text-forest-600" /></div>
+                <span className="text-[10px] font-bold text-forest-700 tracking-widest uppercase">Activity</span>
               </button>
 
-              <label className="bg-forest-50 py-5 rounded-[1.5rem] flex flex-col items-center gap-2 border border-forest-100/50 hover:bg-forest-100 transition-colors cursor-pointer shadow-sm">
-                <div className="bg-white p-2.5 rounded-full shadow-sm"><Camera size={18} className={uploading ? 'text-gray-400' : 'text-forest-600'} /></div>
-                <span className="text-[11px] font-bold text-forest-700 tracking-widest uppercase mt-1">{uploading ? 'Uploading…' : 'Add Photo'}</span>
+              <label className="bg-forest-50 py-4 rounded-[1.5rem] flex flex-col items-center gap-2 border border-forest-100/50 hover:bg-forest-100 transition-colors cursor-pointer shadow-sm">
+                <div className="bg-white p-2.5 rounded-full shadow-sm"><Camera size={16} className={uploading ? 'text-gray-400' : 'text-forest-600'} /></div>
+                <span className="text-[10px] font-bold text-forest-700 tracking-widest uppercase">{uploading ? 'Uploading' : 'Photo'}</span>
                 <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhoto} disabled={uploading} />
               </label>
+
+              <button
+                onClick={() => setShowQR(true)}
+                className="bg-forest-50 py-4 rounded-[1.5rem] flex flex-col items-center gap-2 border border-forest-100/50 hover:bg-forest-100 transition-colors shadow-sm"
+              >
+                <div className="bg-white p-2.5 rounded-full shadow-sm"><QrCode size={16} className="text-forest-600" /></div>
+                <span className="text-[10px] font-bold text-forest-700 tracking-widest uppercase">QR Code</span>
+              </button>
             </div>
           </div>
         )}
+
+        {/* QR Code Modal */}
+        {showQR && (() => {
+          const qrUrl = `${window.location.origin}/tree/${tree.tree_code}`
+          const qrImg = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=12&data=${encodeURIComponent(qrUrl)}`
+          return (
+            <div
+              style={{ position: 'fixed', inset: 0, background: 'rgba(28,43,31,0.7)', zIndex: 100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+              onClick={() => setShowQR(false)}
+            >
+              <div
+                style={{ background: '#F7F5EE', borderRadius: '24px 24px 0 0', padding: '28px 24px 40px', width: '100%', maxWidth: 448 }}
+                onClick={e => e.stopPropagation()}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <div>
+                    <p style={{ fontSize: 16, fontWeight: 500, color: '#1C2B1F' }}>QR Code</p>
+                    <p style={{ fontSize: 11, color: '#6B7B6F', marginTop: 2 }}>{tree.tree_code} · {tree.land_zones?.zone_name}</p>
+                  </div>
+                  <button onClick={() => setShowQR(false)} style={{ background: 'rgba(28,43,31,0.08)', border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                    <X size={16} color="#1C2B1F" />
+                  </button>
+                </div>
+
+                {/* QR Image */}
+                <div style={{ background: '#fff', borderRadius: 16, padding: 16, display: 'flex', justifyContent: 'center', marginBottom: 16, border: '1px solid rgba(42,89,52,0.1)' }}>
+                  <img src={qrImg} alt={`QR for ${tree.tree_code}`} width={200} height={200} style={{ display: 'block', borderRadius: 8 }} />
+                </div>
+
+                <p style={{ fontSize: 11, color: '#6B7B6F', textAlign: 'center', marginBottom: 16, wordBreak: 'break-all' }}>{qrUrl}</p>
+
+                {/* Actions */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <a
+                    href={qrImg}
+                    download={`${tree.tree_code}-qr.png`}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#2A5934', color: '#F7F5EE', borderRadius: 12, padding: '12px 0', fontSize: 13, fontWeight: 500, textDecoration: 'none' }}
+                  >
+                    <Download size={14} /> Download PNG
+                  </a>
+                  <button
+                    onClick={() => window.print()}
+                    style={{ background: '#EAF3DE', color: '#2A5934', border: 'none', borderRadius: 12, padding: '12px 0', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+                  >
+                    🖨 Print
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Activity Timeline */}
         {logs.length > 0 && (

@@ -105,15 +105,44 @@ r.get('/:code', async (req, res) => {
 })
 
 r.post('/', requireOwner, validate(treeCreateSchema), async (req, res) => {
-  const { tree_code } = req.body
-  if (!tree_code) return res.status(400).json({ error: 'tree_code is required' })
-  const payload = { ...req.body, tree_code: tree_code.toUpperCase(), added_by: req.user!.userId }
+  let { tree_code, zone_id } = req.body
+
+  // Auto-generate zone-based code when tree_code is omitted
+  if (!tree_code) {
+    if (!zone_id) return res.status(400).json({ error: 'zone_id is required when tree_code is not provided' })
+
+    const { data: zone } = await db
+      .from('land_zones').select('zone_code').eq('id', zone_id).single()
+    if (!zone) return res.status(400).json({ error: 'Zone not found' })
+
+    const prefix = (zone.zone_code as string).toUpperCase()
+
+    // Find the highest sequence number for this zone prefix
+    const { data: existing } = await db
+      .from('trees')
+      .select('tree_code')
+      .ilike('tree_code', `${prefix}-%`)
+      .order('tree_code', { ascending: false })
+
+    let nextSeq = 1
+    if (existing && existing.length > 0) {
+      const nums = existing
+        .map((t: any) => parseInt(t.tree_code.split('-').pop() || '0', 10))
+        .filter((n: number) => !isNaN(n))
+      if (nums.length) nextSeq = Math.max(...nums) + 1
+    }
+
+    tree_code = `${prefix}-${String(nextSeq).padStart(3, '0')}`
+  }
+
+  const finalCode = (tree_code as string).toUpperCase()
+  const payload = { ...req.body, tree_code: finalCode, added_by: req.user!.userId }
   const { data, error } = await db.from('trees').insert(payload).select().single()
   if (error) return res.status(400).json({ error: error.message })
   await db.from('tree_activity_log').insert({
     tree_id: data.id, performed_by: req.user!.userId,
     action_taken: 'tree_created', new_status: 'pending',
-    notes: `Tree ${tree_code} added to system`
+    notes: `Tree ${finalCode} added to system`
   })
   return res.status(201).json(data)
 })

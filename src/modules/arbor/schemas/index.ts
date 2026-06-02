@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const treeCreateSchema = z.object({
-    tree_code: z.string().min(1, "Tree code is required"),
+    tree_code: z.string().optional(),  // omit to auto-generate from zone
     species_id: z.coerce.number().optional().or(z.literal('')),
     zone_id: z.coerce.number().optional().or(z.literal('')),
     action: z.enum(['pending', 'cut', 'trim', 'keep', 'monitor', 'treat', 'replant']).optional(),

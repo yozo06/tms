@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createTree } from '../modules/arbor/api/trees'
-import { getSpecies, getZones } from '../modules/arbor/api/species'
-import { getUsers } from '../settings/api/users'
+import { createTree } from '../api/trees'
+import { getSpecies, getZones } from '../api/species'
+import { getUsers } from '../api/users'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Plus } from 'lucide-react'
-import SpeciesModal from '../modules/arbor/components/SpeciesModal'
-import ZoneModal from '../modules/arbor/components/ZoneModal'
-import MapPicker from '../modules/arbor/components/MapPicker'
-import { getMapTrees } from '../modules/arbor/api/map'
+import SpeciesModal from '../components/SpeciesModal'
+import ZoneModal from '../components/ZoneModal'
+import MapPicker from '../components/MapPicker'
+import { getMapTrees } from '../api/map'
 
 export default function TreeAdd() {
   const nav = useNavigate()
@@ -21,7 +21,7 @@ export default function TreeAdd() {
   const [allTrees, setAllTrees] = useState<any[]>([])
 
   const [form, setForm] = useState({
-    tree_code: '', species_id: '', zone_id: '', action: 'pending', priority: 'medium',
+    species_id: '', zone_id: '', action: 'pending', priority: 'medium',
     health_score: '', approx_age_yrs: '', height_m: '', trunk_diameter_cm: '',
     coord_x: '', coord_y: '', action_notes: '', public_notes: '', planting_date: '', assigned_to: ''
   })
@@ -33,13 +33,13 @@ export default function TreeAdd() {
   }, [])
   const set = (k: string) => (e: React.ChangeEvent<any>) => setForm(f => ({ ...f, [k]: e.target.value }))
   const submit = async () => {
-    if (!form.tree_code) return toast.error('Tree code required')
+    if (!form.zone_id) return toast.error('Zone is required to generate tree code')
     setSaving(true)
     try {
       const payload: any = { ...form }
       Object.keys(payload).forEach(k => payload[k] === '' && delete payload[k])
-      await createTree(payload)
-      toast.success(`Tree ${form.tree_code} added!`)
+      const created = await createTree(payload)
+      toast.success(`Tree ${created.tree_code} added!`)
       nav('/trees')
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Failed to add tree')
@@ -51,7 +51,18 @@ export default function TreeAdd() {
       <button onClick={() => nav(-1)} className="mb-4 flex items-center gap-1 text-gray-500"><ArrowLeft size={16} /> Back</button>
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Add New Tree</h1>
       <div className="space-y-4">
-        <Field label="Tree Code *" k="tree_code" form={form} onChange={set('tree_code')} placeholder="e.g. T-042" />
+        {/* Auto-code preview */}
+        <div style={{ background: '#EAF3DE', border: '1px solid rgba(42,89,52,0.15)', borderRadius: 12, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 18 }}>🌱</span>
+          <div>
+            <p style={{ fontSize: 11, color: '#6B7B6F', marginBottom: 1 }}>Tree code — auto-generated from zone</p>
+            <p style={{ fontSize: 13, fontWeight: 500, color: '#2A5934', fontFamily: 'monospace' }}>
+              {form.zone_id
+                ? `${zones.find((z: any) => String(z.id) === String(form.zone_id))?.zone_code?.toUpperCase() || '?'}-XXX`
+                : 'Select a zone first'}
+            </p>
+          </div>
+        </div>
         <div>
           <div className="flex justify-between items-center bg-transparent">
             <label className="text-xs font-medium text-gray-500 uppercase">Species</label>
@@ -103,7 +114,7 @@ export default function TreeAdd() {
           <MapPicker
             trees={allTrees}
             value={form.coord_x ? { x: Number(form.coord_x), y: Number(form.coord_y) } : undefined}
-            onChange={(x: any, y: any) => setForm(f => ({ ...f, coord_x: x.toString(), coord_y: y.toString() }))}
+            onChange={(x, y) => setForm(f => ({ ...f, coord_x: x.toString(), coord_y: y.toString() }))}
           />
           <div className="grid grid-cols-2 gap-3 mt-2">
             <Field label="X Coord (m)" k="coord_x" type="number" step="0.001" form={form} onChange={set('coord_x')} />
@@ -132,7 +143,7 @@ export default function TreeAdd() {
       {showSpeciesModal && (
         <SpeciesModal
           onClose={() => setShowSpeciesModal(false)}
-          onSuccess={(s: any) => {
+          onSuccess={(s) => {
             setSpecies(prev => [...prev, s])
             setForm(f => ({ ...f, species_id: s.id }))
           }}
@@ -141,7 +152,7 @@ export default function TreeAdd() {
       {showZoneModal && (
         <ZoneModal
           onClose={() => setShowZoneModal(false)}
-          onSuccess={(z: any) => {
+          onSuccess={(z) => {
             setZones(prev => [...prev, z])
             setForm(f => ({ ...f, zone_id: z.id }))
           }}
