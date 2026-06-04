@@ -7,8 +7,8 @@ services:
     name: tms-api
     runtime: node
     plan: free
-    buildCommand: npm install --include=dev && npm run build:backend
-    startCommand: npm start
+    buildCommand: npm install
+    startCommand: node node_modules/ts-node/dist/bin.js --transpile-only src/server.ts
     healthCheckPath: /api/health
     envVars:
       - key: PORT
