@@ -1,32 +1,22 @@
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
-import path from 'path'
-import authRoutes from './routes/auth'
-import treeRoutes from './routes/trees'
-import mapRoutes from './routes/map'
-import userRoutes from './routes/users'
-import speciesRoutes from './routes/species'
-import zoneRoutes from './routes/zones'
-import dashboardRoutes from './routes/dashboard'
+import arborRoutes from './modules/arbor'
+import authRoutes from './modules/auth'
 
 const app = express()
 
-// ── CORS — must be first, before logger ─────────────────────
+// ── CORS ─────────────────────────────────────────────────────
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:5173',
-  process.env.APP_URL || 'http://localhost:3000',
+  process.env.APP_URL      || 'http://localhost:3000',
 ]
 
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow requests with no origin (curl, Postman, mobile apps)
     if (!origin) return cb(null, true)
     if (allowedOrigins.includes(origin)) return cb(null, true)
-
-    // In production (unified deployment), automatically allow the hosting domain
     if (process.env.NODE_ENV === 'production') return cb(null, true)
-
     console.warn(`🚫 CORS blocked: ${origin}`)
     cb(new Error(`CORS: origin ${origin} not allowed`))
   },
@@ -35,7 +25,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }))
 
-// Handle preflight for all routes
 app.options('*', cors())
 
 // ── Request logger ───────────────────────────────────────────
@@ -48,34 +37,24 @@ app.use((req, _res, next) => {
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+// ── Health ───────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
   console.log('✅ Health check hit')
   res.json({ status: 'ok', ts: new Date().toISOString() })
 })
 
-app.use('/api/auth', authRoutes)
-app.use('/api/trees', treeRoutes)
-app.use('/api/map', mapRoutes)
-app.use('/api/users', userRoutes)
-app.use('/api/species', speciesRoutes)
-app.use('/api/zones', zoneRoutes)
-app.use('/api/dashboard', dashboardRoutes)
+// ── Routes ───────────────────────────────────────────────────
+// auth module  → /api/auth/*  and  /api/users/*
+// arbor module → /api/trees/*, /api/map/*, /api/species/*, /api/zones/*, /api/dashboard/*
+app.use('/api', authRoutes)
+app.use('/api', arborRoutes)
 
-// Serve frontend in production (unified single-server deploy only)
-// On Render, frontend is a separate static site — this block is a no-op there
-if (process.env.NODE_ENV === 'production' && process.env.SERVE_FRONTEND === 'true') {
-  app.use(express.static(path.join(__dirname, '../frontend/dist')))
-  app.get('*', (_req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'))
-  })
-}
-
+// ── 404 + error handlers ─────────────────────────────────────
 app.use((_req, res) => {
   console.log('❌ 404 — route not found')
   res.status(404).json({ error: 'Route not found' })
 })
 
-// Global error handler
 app.use((err: any, _req: any, res: any, _next: any) => {
   console.error('💥 Unhandled error:', err)
   res.status(500).json({ error: 'Internal server error' })
