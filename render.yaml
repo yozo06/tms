@@ -1,10 +1,10 @@
 # Render.com Blueprint — WildArc TMS
-# Connect repo at: https://dashboard.render.com/new/blueprint
+# Services match existing Render service names: tms-api + tms-client
 
 services:
   # ── Backend API (Node / Express) ─────────────────────────
   - type: web
-    name: wildarc-api
+    name: tms-api
     runtime: node
     plan: free
     buildCommand: npm ci && npm run build:backend
@@ -16,12 +16,12 @@ services:
       - key: PORT
         value: 3000
       - key: FRONTEND_URL
-        value: https://wildarc.onrender.com
+        value: https://tms-client.onrender.com
       - key: APP_URL
-        value: https://wildarc-api.onrender.com
+        value: https://tms-api.onrender.com
       - key: SUPABASE_URL
         sync: false
-      - key: SUPABASE_SERVICE_ROLE_KEY
+      - key: SUPABASE_SERVICE_KEY
         sync: false
       - key: JWT_SECRET
         sync: false
@@ -38,7 +38,7 @@ services:
 
   # ── Frontend (Vite Static Site) ───────────────────────────
   - type: static
-    name: wildarc
+    name: tms-client
     buildCommand: npm ci && npm run build:frontend
     staticPublishPath: frontend/dist
     headers:
@@ -54,4 +54,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://wildarc-api.onrender.com/api
+        value: https://tms-api.onrender.com/api
