@@ -52,4 +52,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://tms-api.onrender.com/api
+        value: https://tms1-giv2.onrender.com/api

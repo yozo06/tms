@@ -2,25 +2,16 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
   plugins: [
     react(),
-    tsconfigPaths(),
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
-          {
-            urlPattern: ({ url }) => url.pathname.startsWith('/api'),
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: { maxEntries: 50, maxAgeSeconds: 3600 },
-              networkTimeoutSeconds: 5
-            }
-          },
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
             handler: 'CacheFirst',
@@ -32,10 +23,10 @@ export default defineConfig({
         ]
       },
       manifest: {
-        name: 'Tree Management System',
-        short_name: 'TMS',
-        theme_color: '#166534',
-        background_color: '#ffffff',
+        name: 'WildArc',
+        short_name: 'WildArc',
+        theme_color: '#2A5934',
+        background_color: '#F7F5EE',
         display: 'standalone',
         start_url: '/',
         icons: [
